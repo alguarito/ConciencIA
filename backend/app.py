@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -28,6 +29,11 @@ CASOS_DIR = os.path.join(BASE_DIR, "casos")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(CASOS_DIR, exist_ok=True)
 app.mount("/casos", StaticFiles(directory=CASOS_DIR), name="casos")
+
+# Serve compiled frontend (production)
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
+if os.path.exists(FRONTEND_DIST):
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="frontend_assets")
 
 # Cargar contexto
 def load_context():
@@ -353,6 +359,16 @@ async def generate_batch(request: BatchGenerateRequest):
     
     return {"results": results}
 
+# SPA catch-all: serve index.html for any non-API route
+if os.path.exists(FRONTEND_DIST):
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        file_path = os.path.join(FRONTEND_DIST, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=os.environ.get("ENV") != "production")
