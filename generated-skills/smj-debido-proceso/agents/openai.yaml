@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asesor Debido Proceso SMJ"
+  short_description: "Debido proceso y formatos LaTeX SMJ"
+  default_prompt: "Usa $smj-debido-proceso para orientar un caso y generar los formatos LaTeX requeridos."

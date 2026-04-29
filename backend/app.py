@@ -1,0 +1,358 @@
+import os
+import json
+import subprocess
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+import google.generativeai as genai
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Configurar rutas y archivos
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SKILL_PATH = os.path.join(BASE_DIR, "generated-skills", "smj-debido-proceso", "SKILL.md")
+SCRIPT_PATH = os.path.join(BASE_DIR, "generated-skills", "smj-debido-proceso", "scripts", "generar_formato_latex.py")
+OUTPUT_DIR = os.path.join(BASE_DIR, "salida")
+CASOS_DIR = os.path.join(BASE_DIR, "casos")
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(CASOS_DIR, exist_ok=True)
+app.mount("/casos", StaticFiles(directory=CASOS_DIR), name="casos")
+
+# Cargar contexto
+def load_context():
+    context = "Eres el Asesor de Debido Proceso SMJ.\n"
+    if os.path.exists(SKILL_PATH):
+        with open(SKILL_PATH, 'r', encoding='utf-8') as f:
+            context += f.read()
+            
+    # Añadimos instrucción explícita para devolver listas de verificación de forma reconocible.
+    context += """
+    
+    INSTRUCCIÓN DEL SISTEMA:
+    Cuando identifiques un proceso, SIEMPRE devuelve los pasos o la ruta de acción usando este formato exacto al final de tu respuesta para que la interfaz web pueda construir un checklist dinámico:
+    
+    <PLAN_ACCION>
+    - [ ] Nombre del Paso 1: Descripción corta
+    - [ ] Nombre del Paso 2: Descripción corta
+    - [ ] Nombre del Paso 3: Descripción corta
+    </PLAN_ACCION>
+    
+    GENERACIÓN DE FORMATOS Y RECOLECCIÓN DE DATOS:
+    Si el usuario indica explícitamente o el proceso requiere generar un formato (por ejemplo, "Generar acta de descargos", "Hagamos un llamado de atención"), ¡NO lo generes inmediatamente con datos vacíos!
+    Primero, debes conversar con el usuario y pedirle los datos específicos que requiera ese formato (ejemplo: nombre del estudiante, grado, descripción de los hechos, fecha, etc.).
+    Una vez el usuario te haya proporcionado suficiente información, debes emitir la etiqueta para generar el formato, pero incluyendo los datos estructurados en formato JSON dentro de la etiqueta.
+    
+    FORMATO EXACTO REQUERIDO PARA GENERAR:
+    <GENERAR_FORMATO: nombre-formato>
+    {
+      "estudiante": "Nombre del estudiante",
+      "grado": "10A",
+      "descripcion_hechos": "Descripción detallada de lo ocurrido",
+      "fecha": "YYYY-MM-DD"
+    }
+    </GENERAR_FORMATO>
+    
+    CATÁLOGO DE FORMATOS DISPONIBLES (usa EXACTAMENTE estos nombres técnicos como nombre-formato):
+    - acta-compromiso: Acta de compromiso
+    - acta-estudio-caso: Acta de estudio de caso
+    - acta-restaurativa: Acta de mediación o círculo restaurativo
+    - citacion-acudiente: Citación a padre de familia o acudiente
+    - derecho-peticion-academico: Derecho de petición académico
+    - informe-coordinacion-rectoria: Informe de Coordinación y Orientación a Rectoría
+    - llamado-atencion: Formato de llamado de atención
+    - matricula-observacion: Formato de matrícula en observación
+    - notificacion-decision: Notificación de decisión institucional
+    - plan-mejoramiento: Plan de mejoramiento
+    - preinforme: Acta de entrega de preinforme
+    - promocion-anticipada: Ruta de promoción anticipada
+    - protocolo-tipo-i: Protocolo de atención a situación Tipo I
+    - protocolo-tipo-ii: Protocolo de atención a situación Tipo II
+    - protocolo-tipo-iii: Protocolo de atención a situación Tipo III
+    - reclamacion-academica: Reclamación académica inicial
+    - recurso-apelacion: Recurso de apelación
+    - recurso-reposicion: Recurso de reposición
+    - remision-orientacion: Remisión al Docente Orientador
+    - seguimiento-restaurativo: Seguimiento de acuerdos restaurativos
+    - solicitud-promocion-posterior: Solicitud de promoción posterior
+    - version-libre: Formato para versión libre
+    
+    IMPORTANTE: NO inventes nombres de formato. Usa ÚNICAMENTE los listados arriba. Si el usuario pide un documento que no está en la lista, indícale cuál de los formatos disponibles se ajusta mejor.
+    """
+    return context
+
+SYSTEM_PROMPT = load_context()
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    caso_id: str
+    messages: List[ChatMessage]
+    api_key: Optional[str] = None
+    api_key_fallback: Optional[str] = None
+
+class CasoCreateRequest(BaseModel):
+    nombre: str
+
+@app.get("/api/casos")
+async def get_casos():
+    casos = []
+    if os.path.exists(CASOS_DIR):
+        for item in os.listdir(CASOS_DIR):
+            item_path = os.path.join(CASOS_DIR, item)
+            if os.path.isdir(item_path):
+                # Try to read the name if we want, or just use the folder name
+                casos.append({"id": item, "nombre": item})
+    # Sort cases chronologically based on creation time or simply alphabetically
+    casos.sort(key=lambda x: x["id"], reverse=True)
+    return {"casos": casos}
+
+@app.post("/api/casos")
+async def create_caso(request: CasoCreateRequest):
+    import time
+    timestamp = int(time.time())
+    import re
+    # Create safe folder name
+    safe_nombre = re.sub(r'[^a-zA-Z0-9]', '_', request.nombre)
+    caso_id = f"caso_{timestamp}_{safe_nombre}"
+    
+    caso_path = os.path.join(CASOS_DIR, caso_id)
+    docs_path = os.path.join(caso_path, "documentos")
+    os.makedirs(docs_path, exist_ok=True)
+    
+    return {"id": caso_id, "nombre": request.nombre}
+
+@app.get("/api/casos/{caso_id}")
+async def get_caso_details(caso_id: str):
+    history_path = os.path.join(CASOS_DIR, caso_id, "chat_history.json")
+    messages = []
+    if os.path.exists(history_path):
+        with open(history_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            messages = data.get("messages", [])
+            
+    # Find PDFs
+    pdfs = []
+    docs_path = os.path.join(CASOS_DIR, caso_id, "documentos")
+    if os.path.exists(docs_path):
+        for item in os.listdir(docs_path):
+            if item.endswith(".pdf"):
+                pdfs.append({
+                    "name": item,
+                    "url": f"/casos/{caso_id}/documentos/{item}"
+                })
+                
+    return {"messages": messages, "pdfs": pdfs}
+
+@app.post("/api/chat")
+async def chat(request: ChatRequest):
+    api_key_primary = request.api_key or os.environ.get("GEMINI_API_KEY")
+    api_key_fallback = request.api_key_fallback or os.environ.get("GEMINI_API_KEY_FALLBACK")
+    
+    if not api_key_primary:
+        raise HTTPException(status_code=400, detail="Se requiere API Key de Gemini")
+        
+    history = []
+    for msg in request.messages[:-1]:
+        history.append({"role": "model" if msg.role == "assistant" else "user", "parts": [msg.content]})
+        
+    def attempt_chat(api_key):
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=SYSTEM_PROMPT
+        )
+        chat_session = model.start_chat(history=history)
+        return chat_session.send_message(request.messages[-1].content)
+
+    try:
+        response = attempt_chat(api_key_primary)
+        
+        # Save chat history
+        new_history = [msg.dict() for msg in request.messages]
+        new_history.append({"role": "assistant", "content": response.text})
+        
+        history_path = os.path.join(CASOS_DIR, request.caso_id, "chat_history.json")
+        os.makedirs(os.path.dirname(history_path), exist_ok=True)
+        with open(history_path, 'w', encoding='utf-8') as f:
+            json.dump({"messages": new_history}, f, ensure_ascii=False, indent=2)
+            
+        return {"content": response.text}
+    except Exception as e:
+        error_msg = str(e).lower()
+        # Verificar si es error de quota, rate limit o exhaustion
+        if ("quota" in error_msg or "exhausted" in error_msg or "429" in error_msg) and api_key_fallback:
+            try:
+                print("Primary API Key exhausted. Falling back to secondary API Key...")
+                response_fallback = attempt_chat(api_key_fallback)
+                return {"content": response_fallback.text}
+            except Exception as e2:
+                raise HTTPException(status_code=500, detail=f"Fallback también falló: {str(e2)}")
+        else:
+            raise HTTPException(status_code=500, detail=str(e))
+
+class GenerateFormatRequest(BaseModel):
+    caso_id: str
+    tipo: str
+    datos: Optional[Dict] = None
+
+@app.post("/api/generate-pdf")
+async def generate_pdf(request: GenerateFormatRequest):
+    try:
+        caso_docs_dir = os.path.join(CASOS_DIR, request.caso_id, "documentos")
+        os.makedirs(caso_docs_dir, exist_ok=True)
+        
+        datos_path = os.path.join(caso_docs_dir, f"datos_{request.tipo}.json")
+        with open(datos_path, 'w', encoding='utf-8') as f:
+            json.dump(request.datos or {}, f, ensure_ascii=False, indent=2)
+            
+        salida_tex = os.path.join(caso_docs_dir, f"{request.tipo}.tex")
+        
+        cmd = ["python", SCRIPT_PATH, "--tipo", request.tipo, "--salida", salida_tex, "--datos", datos_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            return {"status": "error", "message": "Error generando archivo TeX", "details": result.stderr}
+            
+        compile_cmd = ["pdflatex", "-interaction=nonstopmode", "-output-directory", caso_docs_dir, salida_tex]
+        comp_result = subprocess.run(compile_cmd, capture_output=True, text=True)
+        
+        pdf_filename = f"{request.tipo}.pdf"
+        pdf_path = os.path.join(caso_docs_dir, pdf_filename)
+        
+        if os.path.exists(pdf_path):
+            return {"status": "success", "pdf_url": f"/casos/{request.caso_id}/documentos/{pdf_filename}"}
+        else:
+            return {"status": "error", "message": "No se pudo generar el PDF.", "details": comp_result.stdout}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================
+# MODO ORDEN — Endpoints offline (sin IA)
+# ============================================================
+
+import sys
+sys.path.insert(0, os.path.join(BASE_DIR, "generated-skills", "smj-debido-proceso", "scripts"))
+from generar_formato_latex import FORMATOS, PAQUETES, LABELS, COMMON_FIELDS
+
+RUTA_DESCRIPTIONS = {
+    "falta-leve": {"nombre": "Falta Leve", "descripcion": "Incumplimientos menores al Manual de Convivencia", "articulos": "Arts. 37, 39, 42, 43"},
+    "falta-grave": {"nombre": "Falta Grave", "descripcion": "Incumplimientos graves que afectan la convivencia", "articulos": "Arts. 37, 42, 43"},
+    "falta-gravisima": {"nombre": "Falta Gravísima", "descripcion": "Conductas que atentan contra la integridad o la ley", "articulos": "Arts. 35, 42, 43"},
+    "situacion-tipo-i": {"nombre": "Situación Tipo I", "descripcion": "Conflictos manejados inadecuadamente sin daño al cuerpo o la salud", "articulos": "Art. 33"},
+    "situacion-tipo-ii": {"nombre": "Situación Tipo II", "descripcion": "Agresión escolar, acoso o ciberacoso (no delito)", "articulos": "Art. 34"},
+    "situacion-tipo-iii": {"nombre": "Situación Tipo III", "descripcion": "Conductas que constituyen presunto delito", "articulos": "Art. 35"},
+    "justicia-restaurativa": {"nombre": "Justicia Restaurativa", "descripcion": "Mediación y círculos restaurativos", "articulos": "Arts. 45, 46, 47"},
+    "reclamacion-academica": {"nombre": "Reclamación Académica", "descripcion": "Inconformidad con valoraciones o decisiones académicas", "articulos": "SIEE Art. 13"},
+    "promocion-posterior": {"nombre": "Promoción Posterior", "descripcion": "Solicitud de promoción fuera del periodo regular", "articulos": "SIEE Art. 3"},
+    "promocion-anticipada": {"nombre": "Promoción Anticipada", "descripcion": "Promoción antes de finalizar el año lectivo", "articulos": "SIEE Art. 3, literal 10"},
+}
+
+@app.get("/api/rutas")
+async def get_rutas():
+    """Devuelve el catálogo completo de rutas, formatos y campos para el modo Orden."""
+    rutas = []
+    for ruta_id, formato_ids in PAQUETES.items():
+        desc = RUTA_DESCRIPTIONS.get(ruta_id, {"nombre": ruta_id, "descripcion": "", "articulos": ""})
+        formatos = []
+        for fmt_id in formato_ids:
+            fmt_info = FORMATOS.get(fmt_id, {})
+            # Collect all unique field keys for this format
+            campos_especificos = []
+            for _, keys in fmt_info.get("secciones", []):
+                for key in keys:
+                    if key not in [f for row in COMMON_FIELDS for f in row]:
+                        campos_especificos.append({
+                            "key": key,
+                            "label": LABELS.get(key, key.replace("_", " ").title())
+                        })
+            formatos.append({
+                "id": fmt_id,
+                "codigo": fmt_info.get("codigo", ""),
+                "titulo": fmt_info.get("titulo", fmt_id),
+                "campos_especificos": campos_especificos
+            })
+        rutas.append({
+            "id": ruta_id,
+            "nombre": desc["nombre"],
+            "descripcion": desc["descripcion"],
+            "articulos": desc["articulos"],
+            "formatos": formatos,
+            "total_formatos": len(formatos)
+        })
+    
+    # Campos generales compartidos
+    campos_generales = []
+    for row in COMMON_FIELDS:
+        for key in row:
+            campos_generales.append({"key": key, "label": LABELS.get(key, key)})
+    
+    return {"rutas": rutas, "campos_generales": campos_generales}
+
+class BatchGenerateRequest(BaseModel):
+    caso_id: str
+    ruta: str
+    datos: Dict
+
+@app.post("/api/generate-batch")
+async def generate_batch(request: BatchGenerateRequest):
+    """Genera TODOS los formatos de una ruta de golpe."""
+    if request.ruta not in PAQUETES:
+        raise HTTPException(status_code=400, detail=f"Ruta desconocida: {request.ruta}")
+    
+    caso_docs_dir = os.path.join(CASOS_DIR, request.caso_id, "documentos")
+    os.makedirs(caso_docs_dir, exist_ok=True)
+    
+    # Save full data JSON
+    datos_path = os.path.join(caso_docs_dir, "datos_completos.json")
+    with open(datos_path, 'w', encoding='utf-8') as f:
+        json.dump(request.datos, f, ensure_ascii=False, indent=2)
+    
+    results = []
+    for i, formato_id in enumerate(PAQUETES[request.ruta], start=1):
+        try:
+            salida_tex = os.path.join(caso_docs_dir, f"{i:02d}-{formato_id}.tex")
+            
+            cmd = ["python", SCRIPT_PATH, "--tipo", formato_id, "--salida", salida_tex, "--datos", datos_path]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                results.append({"id": formato_id, "status": "error", "message": result.stderr[:200]})
+                continue
+            
+            compile_cmd = ["pdflatex", "-interaction=nonstopmode", "-output-directory", caso_docs_dir, salida_tex]
+            subprocess.run(compile_cmd, capture_output=True, text=True)
+            
+            pdf_filename = f"{i:02d}-{formato_id}.pdf"
+            pdf_path = os.path.join(caso_docs_dir, pdf_filename)
+            
+            if os.path.exists(pdf_path):
+                results.append({
+                    "id": formato_id,
+                    "status": "success",
+                    "name": pdf_filename,
+                    "url": f"/casos/{request.caso_id}/documentos/{pdf_filename}"
+                })
+            else:
+                results.append({"id": formato_id, "status": "error", "message": "pdflatex no generó el archivo"})
+        except Exception as e:
+            results.append({"id": formato_id, "status": "error", "message": str(e)})
+    
+    return {"results": results}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

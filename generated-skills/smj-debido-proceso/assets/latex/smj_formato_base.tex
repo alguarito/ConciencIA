@@ -1,0 +1,94 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\geometry{margin=1.7cm}
+
+\definecolor{SMJBlue}{HTML}{1F4E79}
+\definecolor{SMJGray}{HTML}{F2F4F7}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.2em}
+
+% Reemplace esta ruta por la ruta absoluta del logo si compila fuera del skill.
+\newcommand{\SMJLogo}{../logo-institucion.png}
+\newcommand{\CodigoFormato}{SMJ-FDP-XX}
+\newcommand{\VersionFormato}{Version 1}
+\newcommand{\TituloFormato}{TITULO DEL FORMATO}
+\newcommand{\FuenteFormato}{Manual de Convivencia / SIEE vigente}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\includegraphics[height=1.25cm]{\SMJLogo}}
+\chead{\small\textbf{INSTITUCION EDUCATIVA SOR MARIA JULIANA}\\MORAL PEDESTAL DE LA SABIDURIA\\Calle 21 No 5-111 | iesormariajuliana@gmail.com\\Cartago - Valle del Cauca}
+\rhead{\scriptsize \CodigoFormato\\\VersionFormato\\Pagina \thepage\ de \pageref{LastPage}}
+\cfoot{\scriptsize Documento reservado para uso institucional. Proteger datos personales de ninos, ninas y adolescentes.}
+\setlength{\headheight}{52pt}
+\setlength{\headsep}{18pt}
+
+\newcommand{\Campo}[2]{\textbf{#1:} #2\\[0.35em]}
+\newcommand{\LineaCampo}[1]{\textbf{#1:} \hrulefill\\[0.65em]}
+\newcommand{\Bloque}[2]{%
+  \vspace{0.4em}
+  \colorbox{SMJGray}{\parbox{\dimexpr\linewidth-2\fboxsep}{\textbf{#1}}}\\[-0.2em]
+  \fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{#2}}
+  \vspace{0.6em}
+}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries\color{SMJBlue}\TituloFormato}\\
+{\small \FuenteFormato}
+\end{center}
+
+\section*{Datos de identificacion}
+\begin{tabularx}{\linewidth}{|>{\bfseries}p{0.22\linewidth}|X|>{\bfseries}p{0.18\linewidth}|X|}
+\hline
+Fecha & & Hora & \\
+\hline
+Sede & & Jornada & \\
+\hline
+Estudiante & & Grado/Grupo & \\
+\hline
+Acudiente & & Telefono & \\
+\hline
+Responsable & & Cargo & \\
+\hline
+\end{tabularx}
+
+\section*{Hechos, solicitud o situacion}
+\vspace{2.5cm}
+
+\section*{Fundamento institucional}
+\vspace{1.5cm}
+
+\section*{Actuaciones, decisiones o compromisos}
+\vspace{3cm}
+
+\section*{Anexos}
+\begin{itemize}
+  \item Observador del estudiante.
+  \item Evidencias aportadas.
+  \item Citaciones, comunicaciones o constancias de notificacion.
+\end{itemize}
+
+\section*{Firmas}
+\vspace{1cm}
+\begin{tabularx}{\linewidth}{X X}
+\hrulefill & \hrulefill\\
+Estudiante & Responsable institucional\\[2.2em]
+\hrulefill & \hrulefill\\
+Acudiente & Testigo / Personero / Recibido\\
+\end{tabularx}
+
+\end{document}
