@@ -124,11 +124,21 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
                   key={ruta.id}
                   onClick={() => { 
                     setSelectedRuta(ruta); 
+                    
+                    let normaAplicable = ruta.articulos ? `Manual de Convivencia - ${ruta.articulos}` : '';
+                    if (ruta.id.includes('tipo-i') && !ruta.id.includes('ii')) normaAplicable = "Ley 1620 de 2013 y Manual de Convivencia, " + ruta.articulos;
+                    else if (ruta.id.includes('tipo-ii') && !ruta.id.includes('iii')) normaAplicable = "Ley 1620 de 2013 y Manual de Convivencia, " + ruta.articulos;
+                    else if (ruta.id.includes('tipo-iii')) normaAplicable = "Ley 1620 de 2013, Código de Infancia y Adolescencia, y Manual de Convivencia, " + ruta.articulos;
+                    else if (ruta.id.includes('falta')) normaAplicable = "Manual de Convivencia Institucional, " + ruta.articulos;
+                    else if (ruta.id.includes('academica') || ruta.id.includes('promocion')) normaAplicable = "Sistema Institucional de Evaluación de Estudiantes (SIEE), " + ruta.articulos;
+                    else if (ruta.id.includes('justicia')) normaAplicable = "Justicia Restaurativa Escolar y Manual de Convivencia, " + ruta.articulos;
+
                     setGeneralData(prev => ({
                       ...prev,
                       responsable: userProfile?.nombre || prev.responsable || '',
                       cargo: userProfile?.cargo || prev.cargo || '',
-                      sede: userProfile?.sede || prev.sede || ''
+                      sede: userProfile?.sede || prev.sede || '',
+                      norma: normaAplicable
                     }));
                     setStep(1); 
                   }}
