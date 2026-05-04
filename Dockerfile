@@ -1,38 +1,40 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
 
-# Install system dependencies: TeX Live (minimal) + Node.js
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-latex-base \
     texlive-latex-recommended \
+    texlive-latex-extra \
     texlive-fonts-recommended \
     texlive-lang-spanish \
     texlive-luatex \
     latexmk \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && curl -fSSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy and install backend dependencies
+# Copy requirements and install
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Copy frontend and build
-COPY frontend/ ./frontend/
-WORKDIR /app/frontend
-RUN npm ci && npm run build
-
-# Copy everything else
-WORKDIR /app
+# Copy everything (Respects .dockerignore)
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p casos salida
+# Build frontend
+WORKDIR /app/frontend
+RUN npm install && npm run build
 
-# Expose port (HF uses 7860)
+# Back to root
+WORKDIR /app
+
+# Create necessary dirs with proper permissions for HF user
+RUN mkdir -p casos salida && chmod 777 casos salida
+
+# Expose port
 EXPOSE 7860
 
-# Start the server
-CMD ["python", "backend/app.py"]
+# Run with python3 and absolute path handling
+CMD ["python3", "backend/app.py"]

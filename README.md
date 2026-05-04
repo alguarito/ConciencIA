@@ -1,3 +1,12 @@
+---
+title: ConciencIA SMJ
+emoji: 🛡️
+colorFrom: indigo
+colorTo: green
+sdk: docker
+app_port: 7860
+---
+
 # ConciencIA + Orden — I.E. Sor María Juliana
 
 Sistema Inteligente de Apoyo al Debido Proceso y SIEE para la Institución Educativa Sor María Juliana.

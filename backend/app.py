@@ -370,5 +370,7 @@ if os.path.exists(FRONTEND_DIST):
 
 if __name__ == "__main__":
     import uvicorn
+    # En Hugging Face la variable de entorno es PORT, por defecto 7860
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=os.environ.get("ENV") != "production")
+    # Pasamos el objeto app directamente para evitar errores de importación de módulo
+    uvicorn.run(app, host="0.0.0.0", port=port)
