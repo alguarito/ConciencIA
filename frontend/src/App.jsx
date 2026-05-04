@@ -4,6 +4,7 @@ import ProcessChecklist from './components/ProcessChecklist';
 import PdfViewer from './components/PdfViewer';
 import CaseSidebar from './components/CaseSidebar';
 import CaseWizard from './components/CaseWizard';
+import LoadingOverlay from './components/LoadingOverlay';
 import axios from 'axios';
 import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText, CheckCircle, AlertCircle, Moon, Sun } from 'lucide-react';
 
@@ -19,6 +20,7 @@ function App() {
   const [mobileTab, setMobileTab] = useState('trabajo'); // 'casos' | 'trabajo' | 'documentos'
   const [toasts, setToasts] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [generatingFormat, setGeneratingFormat] = useState(null);
 
   const addToast = (message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -123,6 +125,7 @@ function App() {
 
   const handleGenerateFormat = async (formatoName, jsonData = {}) => {
     if (!currentCaseId) return;
+    setGeneratingFormat(formatoName);
     try {
       const response = await axios.post('/api/generate-pdf', {
         caso_id: currentCaseId,
@@ -138,6 +141,8 @@ function App() {
     } catch (error) { 
       console.error("Error calling generate-pdf API:", error); 
       addToast(`Error generando formato: ${error.message}`, 'error');
+    } finally {
+      setGeneratingFormat(null);
     }
   };
 
@@ -149,7 +154,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 font-sans text-gray-800 dark:text-gray-200 flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 font-sans text-gray-800 dark:text-gray-200 flex flex-col transition-colors duration-300 relative">
+      {generatingFormat && <LoadingOverlay title={`Generando Expediente Legal...`} />}
       <div className="max-w-[1800px] w-full mx-auto h-[calc(100vh-2rem)] flex flex-col gap-3">
         
         {/* Header */}
