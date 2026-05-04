@@ -163,14 +163,14 @@ function App() {
           <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 mb-4 z-20 relative transition-colors duration-300 gap-3">
             <div className="flex items-center justify-between w-full sm:w-auto">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl shadow-inner border border-emerald-400">
-                  <Shield className="text-white" size={24} strokeWidth={2.5} />
+                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-emerald-100 dark:border-slate-700 bg-white flex items-center justify-center p-0.5">
+                  <img src="/logo.png" alt="Escudo Sor María Juliana" className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 <div>
                   <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-indigo-600 dark:from-emerald-400 dark:to-indigo-400 drop-shadow-sm tracking-tight">
                     ConciencIA
                   </h1>
-                  <p className="hidden sm:block text-gray-400 dark:text-gray-500 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
+                  <p className="hidden sm:block text-gray-400 dark:text-gray-500 text-xs font-medium mt-0.5">I.E. Sor María Juliana — Debido Proceso y SIEE</p>
                 </div>
               </div>
               <button 

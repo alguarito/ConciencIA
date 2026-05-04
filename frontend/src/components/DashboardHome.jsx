@@ -45,10 +45,15 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
   };
 
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto custom-scrollbar dark:bg-slate-900 transition-colors duration-300">
+    <div className="h-full flex flex-col p-6 overflow-y-auto custom-scrollbar dark:bg-slate-900 transition-colors duration-300 relative">
       
+      {/* Watermark Background */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.04] dark:opacity-[0.02] z-0 overflow-hidden">
+        <img src="/logo.png" alt="" className="w-full max-w-[600px] object-contain grayscale" />
+      </div>
+
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-8 relative z-10">
         <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
           <LayoutDashboard size={24} />
         </div>
@@ -59,7 +64,7 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 relative z-10">
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Casos</p>
@@ -90,14 +95,15 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
       </div>
 
       {/* Quick Actions */}
-      <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-        <BarChart3 size={20} className="text-emerald-500" />
-        Accesos Rápidos
-      </h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <button 
-          onClick={() => handleQuickStart('falta-leve', 'Falta Leve')}
+      <div className="relative z-10">
+        <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+          <BarChart3 size={20} className="text-emerald-500" />
+          Accesos Rápidos
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <button 
+            onClick={() => handleQuickStart('falta-leve', 'Falta Leve')}
           disabled={loadingRoute !== null}
           className="text-left bg-gradient-to-br from-orange-50 to-amber-50 dark:from-slate-800 dark:to-slate-800 hover:shadow-md border border-orange-100 dark:border-slate-700 p-5 rounded-2xl transition-all group relative overflow-hidden"
         >
@@ -145,6 +151,7 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
             <ChevronRight size={24} className="text-indigo-300 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
           </div>
         </button>
+      </div>
       </div>
       
     </div>
