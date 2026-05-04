@@ -337,7 +337,9 @@ async def generate_batch(request: BatchGenerateRequest):
     results = []
     for i, formato_id in enumerate(PAQUETES[request.ruta], start=1):
         try:
-            salida_tex = os.path.join(caso_docs_dir, f"{i:02d}-{formato_id}.tex")
+            titulo = FORMATOS.get(formato_id, {}).get("titulo", formato_id).replace(' ', '_').replace('/', '_')
+            base_filename = f"{i}_{titulo}"
+            salida_tex = os.path.join(caso_docs_dir, f"{base_filename}.tex")
             
             cmd = ["python", SCRIPT_PATH, "--tipo", formato_id, "--salida", salida_tex, "--datos", datos_path]
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -349,7 +351,7 @@ async def generate_batch(request: BatchGenerateRequest):
             compile_cmd = ["pdflatex", "-interaction=nonstopmode", "-output-directory", caso_docs_dir, salida_tex]
             subprocess.run(compile_cmd, capture_output=True, text=True)
             
-            pdf_filename = f"{i:02d}-{formato_id}.pdf"
+            pdf_filename = f"{base_filename}.pdf"
             pdf_path = os.path.join(caso_docs_dir, pdf_filename)
             
             if os.path.exists(pdf_path):
@@ -365,6 +367,32 @@ async def generate_batch(request: BatchGenerateRequest):
             results.append({"id": formato_id, "status": "error", "message": str(e)})
     
     return {"results": results}
+
+import io
+import zipfile
+from fastapi.responses import StreamingResponse
+
+@app.get("/api/casos/{caso_id}/descargar-zip")
+async def descargar_zip(caso_id: str):
+    """Genera y descarga un archivo ZIP con todos los PDFs del caso."""
+    caso_docs_dir = os.path.join(CASOS_DIR, caso_id, "documentos")
+    if not os.path.exists(caso_docs_dir):
+        raise HTTPException(status_code=404, detail="No hay documentos generados para este caso")
+    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for root, _, files in os.walk(caso_docs_dir):
+            for file in files:
+                if file.endswith(".pdf"):
+                    file_path = os.path.join(root, file)
+                    zf.write(file_path, arcname=file)
+    
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer, 
+        media_type="application/zip", 
+        headers={"Content-Disposition": f"attachment; filename=Expediente_{caso_id}.zip"}
+    )
 
 # SPA catch-all: serve index.html for any non-API route
 if os.path.exists(FRONTEND_DIST):

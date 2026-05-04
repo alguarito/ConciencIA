@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Send, Loader2, Bot, User } from 'lucide-react';
 import axios from 'axios';
 
-const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy el Asesor de Debido Proceso SMJ. ¿En qué te puedo ayudar hoy? (ej. "Un estudiante cometió fraude en un examen" o "Necesito generar un acta de descargos")' };
+const WELCOME_MSG = { role: 'assistant', content: '¡Hola! Soy tu asistente de Debido Proceso. Para comenzar rápidamente y ahorrarte tiempo, indícame por favor:\n\n1. Nombre y grado del estudiante involucrado.\n2. Qué sucedió exactamente (descripción de los hechos).\n3. Fecha y lugar del incidente.' };
 
 export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSteps, onGenerateFormat }) {
   const [messages, setMessages] = useState([WELCOME_MSG]);

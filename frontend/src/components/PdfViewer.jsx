@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, X, Loader2 } from 'lucide-react';
+import { FileText, X, Loader2, DownloadCloud } from 'lucide-react';
 
 export default function PdfViewer({ pdfs, activePdfIndex, setActivePdfIndex, removePdf }) {
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,19 @@ export default function PdfViewer({ pdfs, activePdfIndex, setActivePdfIndex, rem
 
   return (
     <div className="h-full bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 flex flex-col overflow-hidden">
+      {/* Actions Bar */}
+      <div className="bg-indigo-50 border-b border-indigo-100 p-2 flex justify-between items-center">
+        <span className="text-xs font-semibold text-indigo-800 ml-2">Expediente Actual ({pdfs.length} docs)</span>
+        <a 
+          href={`/api/casos/${pdfs[0]?.url.split('/')[2]}/descargar-zip`} 
+          download 
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow-sm transition-colors"
+        >
+          <DownloadCloud size={14} />
+          Descargar ZIP
+        </a>
+      </div>
+
       {/* Tabs */}
       <div className="flex overflow-x-auto border-b border-gray-200 bg-gray-50">
         {pdfs.map((pdf, index) => (

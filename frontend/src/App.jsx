@@ -5,7 +5,7 @@ import PdfViewer from './components/PdfViewer';
 import CaseSidebar from './components/CaseSidebar';
 import CaseWizard from './components/CaseWizard';
 import axios from 'axios';
-import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText } from 'lucide-react';
+import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 function App() {
   const [steps, setSteps] = useState([]);
@@ -17,6 +17,15 @@ function App() {
   const [userProfile, setUserProfile] = useState({ nombre: '', cargo: '', sede: '' });
   const [mode, setMode] = useState('orden'); // 'conciencia' | 'orden'
   const [mobileTab, setMobileTab] = useState('trabajo'); // 'casos' | 'trabajo' | 'documentos'
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (message, type = 'success') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
 
   // Case management state
   const [casos, setCasos] = useState([]);
@@ -105,9 +114,13 @@ function App() {
       if (response.data.status === 'success') {
         const newPdf = { name: `${formatoName}.pdf`, url: response.data.pdf_url };
         setPdfs(prev => [...prev, newPdf]);
-        setActivePdfIndex(pdfs.length);
+        setActivePdfIndex(pdfs.length); // will be pdfs.length - 1 after render
+        addToast(`✅ Formato ${formatoName} generado con éxito.`);
       }
-    } catch (error) { console.error("Error calling generate-pdf API:", error); }
+    } catch (error) { 
+      console.error("Error calling generate-pdf API:", error); 
+      addToast(`Error generando formato: ${error.message}`, 'error');
+    }
   };
 
   const removePdf = (indexToRemove) => {
@@ -277,7 +290,8 @@ function App() {
                     casoId={currentCaseId}
                     loadedMessages={loadedMessages}
                     onUpdateSteps={handleUpdateSteps} 
-                    onGenerateFormat={handleGenerateFormat} 
+                    onGenerateFormat={handleGenerateFormat}
+                    addToast={addToast}
                   />
                 </div>
               </div>
@@ -286,7 +300,16 @@ function App() {
             <>
               {/* Wizard para Orden */}
               <div className={`w-full lg:w-[53%] h-full min-h-0 ${mobileTab === 'trabajo' ? 'block' : 'hidden lg:block'}`}>
-                <CaseWizard currentCaseId={currentCaseId} userProfile={userProfile} />
+                <CaseWizard 
+                  currentCaseId={currentCaseId} 
+                  userProfile={userProfile} 
+                  addToast={addToast}
+                  onPdfsGenerated={(newPdfs) => {
+                    setPdfs(prev => [...prev, ...newPdfs]);
+                    setActivePdfIndex(pdfs.length);
+                    setMobileTab('documentos'); // Cambiar a pestaña de documentos en móvil
+                  }}
+                />
               </div>
             </>
           )}
@@ -324,6 +347,18 @@ function App() {
             </button>
           </div>
         </main>
+      </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed bottom-24 lg:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map(toast => (
+          <div key={toast.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
+          }`}>
+            {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

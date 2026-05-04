@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowRight, ArrowLeft, FileText, Users, ClipboardList, Printer, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import LoadingOverlay from './LoadingOverlay';
 
 const STEP_LABELS = ['Clasificar Caso', 'Datos Generales', 'Datos Específicos', 'Generar Expediente'];
 
-export default function CaseWizard({ currentCaseId, userProfile }) {
+export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdfsGenerated }) {
   const [step, setStep] = useState(0);
   const [rutas, setRutas] = useState([]);
   const [camposGenerales, setCamposGenerales] = useState([]);
@@ -14,6 +15,44 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
   const [generating, setGenerating] = useState(false);
   const [results, setResults] = useState(null);
   const [activeCategory, setActiveCategory] = useState('convivencia');
+
+  // Auto-cargar borradores
+  useEffect(() => {
+    if (currentCaseId) {
+      const savedState = localStorage.getItem(`draft_${currentCaseId}`);
+      if (savedState) {
+        try {
+          const { gData, sData, sRuta } = JSON.parse(savedState);
+          if (gData) setGeneralData(gData);
+          if (sData) setSpecificData(sData);
+          if (sRuta && !selectedRuta) {
+            setSelectedRuta(sRuta);
+            setStep(1); // Saltar al paso 1 si hay borrador
+          }
+        } catch (e) {
+          console.error("Error loading draft", e);
+        }
+      } else {
+        // Reset para casos sin borrador
+        setGeneralData({});
+        setSpecificData({});
+        setSelectedRuta(null);
+        setStep(0);
+        setResults(null);
+      }
+    }
+  }, [currentCaseId]);
+
+  // Auto-guardar borradores
+  useEffect(() => {
+    if (currentCaseId && selectedRuta && !results) {
+      localStorage.setItem(`draft_${currentCaseId}`, JSON.stringify({
+        gData: generalData,
+        sData: specificData,
+        sRuta: selectedRuta
+      }));
+    }
+  }, [generalData, specificData, selectedRuta, currentCaseId, results]);
 
   const sharedFields = React.useMemo(() => {
     if (!selectedRuta) return [];
@@ -77,10 +116,27 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
         datos: mergedData
       });
       setResults(response.data.results);
+      
+      const successResults = response.data.results.filter(r => r.status === 'success');
+      if (successResults.length > 0) {
+        if (addToast) addToast(`✅ Expediente generado: ${successResults.length} documentos listos.`);
+        if (onPdfsGenerated) {
+          const newPdfs = successResults.map(r => ({ name: r.name, url: r.url }));
+          onPdfsGenerated(newPdfs);
+        }
+      }
+      
+      const errorResults = response.data.results.filter(r => r.status === 'error');
+      if (errorResults.length > 0 && addToast) {
+        addToast(`⚠️ Hubo errores al generar ${errorResults.length} documentos.`, 'error');
+      }
+      
     } catch (err) {
       console.error("Error generating batch:", err);
+      if (addToast) addToast("Error al conectar con el servidor.", "error");
     } finally {
       setGenerating(false);
+      localStorage.removeItem(`draft_${currentCaseId}`); // Limpiar borrador al terminar
     }
   };
 
@@ -95,7 +151,9 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="h-full flex flex-col bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 overflow-hidden relative">
+      {generating && <LoadingOverlay title="Estructurando Expediente Legal" />}
+      
       {/* Stepper */}
       <div className="bg-emerald-900 text-white px-4 py-3">
         <div className="flex items-center justify-between">
