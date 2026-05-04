@@ -5,7 +5,7 @@ import PdfViewer from './components/PdfViewer';
 import CaseSidebar from './components/CaseSidebar';
 import CaseWizard from './components/CaseWizard';
 import axios from 'axios';
-import { Shield, Settings, Key, Brain, ListOrdered } from 'lucide-react';
+import { Shield, Settings, Key, Brain, ListOrdered, UserCircle } from 'lucide-react';
 
 function App() {
   const [steps, setSteps] = useState([]);
@@ -14,6 +14,7 @@ function App() {
   const [activePdfIndex, setActivePdfIndex] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [apiKeys, setApiKeys] = useState({ primary: '', fallback: '' });
+  const [userProfile, setUserProfile] = useState({ nombre: '', cargo: '', sede: '' });
   const [mode, setMode] = useState('orden'); // 'conciencia' | 'orden'
 
   // Case management state
@@ -25,6 +26,10 @@ function App() {
     const savedKeys = localStorage.getItem('smj_api_keys');
     if (savedKeys) {
       try { setApiKeys(JSON.parse(savedKeys)); } catch (e) {}
+    }
+    const savedProfile = localStorage.getItem('smj_user_profile');
+    if (savedProfile) {
+      try { setUserProfile(JSON.parse(savedProfile)); } catch (e) {}
     }
     const savedMode = localStorage.getItem('smj_mode');
     if (savedMode) setMode(savedMode);
@@ -69,6 +74,12 @@ function App() {
     const newKeys = { ...apiKeys, [field]: cleanValue };
     setApiKeys(newKeys);
     localStorage.setItem('smj_api_keys', JSON.stringify(newKeys));
+  };
+
+  const handleProfileChange = (field, value) => {
+    const newProfile = { ...userProfile, [field]: value };
+    setUserProfile(newProfile);
+    localStorage.setItem('smj_user_profile', JSON.stringify(newProfile));
   };
 
   const handleModeChange = (newMode) => {
@@ -159,21 +170,68 @@ function App() {
 
           {/* Settings */}
           {showSettings && (
-            <div className="bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-md border border-gray-100 p-4">
-              <div className="flex items-center gap-2 mb-3 text-indigo-800">
-                <Key size={18} />
-                <h3 className="font-semibold text-sm">API Keys para ConciencIA (Guardadas localmente)</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">API Key Principal</label>
-                  <input type="password" value={apiKeys.primary} onChange={(e) => handleKeyChange('primary', e.target.value)}
-                    placeholder="AIzaSy..." className="w-full text-sm rounded-lg border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <div className="bg-white bg-opacity-95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 p-5 mt-1 animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* User Profile Card */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-100 relative overflow-hidden shadow-inner">
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-200 rounded-full opacity-40 pointer-events-none"></div>
+                  
+                  <div className="flex items-center gap-3 mb-4 text-emerald-800 relative z-10 border-b border-emerald-200 pb-3">
+                    <UserCircle size={24} className="text-emerald-600" />
+                    <div>
+                      <h3 className="font-bold text-sm leading-tight">Credencial del Docente</h3>
+                      <p className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold">Autocompletado Activo</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 relative z-10">
+                    <div>
+                      <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Nombre Completo</label>
+                      <input type="text" value={userProfile.nombre} onChange={(e) => handleProfileChange('nombre', e.target.value)}
+                        placeholder="Ej. María Fernanda López" 
+                        className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Cargo</label>
+                        <input type="text" value={userProfile.cargo} onChange={(e) => handleProfileChange('cargo', e.target.value)}
+                          placeholder="Ej. Coordinador" 
+                          className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Sede</label>
+                        <input type="text" value={userProfile.sede} onChange={(e) => handleProfileChange('sede', e.target.value)}
+                          placeholder="Ej. Principal" 
+                          className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">API Key de Respaldo</label>
-                  <input type="password" value={apiKeys.fallback} onChange={(e) => handleKeyChange('fallback', e.target.value)}
-                    placeholder="AIzaSy..." className="w-full text-sm rounded-lg border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+
+                {/* API Keys Card */}
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-100 shadow-inner">
+                  <div className="flex items-center gap-3 mb-4 text-indigo-800 border-b border-indigo-200 pb-3">
+                    <Key size={24} className="text-indigo-600" />
+                    <div>
+                      <h3 className="font-bold text-sm leading-tight">Motor de ConciencIA</h3>
+                      <p className="text-[10px] uppercase tracking-wider text-indigo-600 font-semibold">Conexión Segura</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-indigo-800 mb-1.5 ml-1">Clave API Principal (Gemini)</label>
+                      <input type="password" value={apiKeys.primary} onChange={(e) => handleKeyChange('primary', e.target.value)}
+                        placeholder="AIzaSy..." 
+                        className="w-full text-sm rounded-lg border-indigo-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-indigo-800 mb-1.5 ml-1">Clave API Respaldo</label>
+                      <input type="password" value={apiKeys.fallback} onChange={(e) => handleKeyChange('fallback', e.target.value)}
+                        placeholder="AIzaSy..." 
+                        className="w-full text-sm rounded-lg border-indigo-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -217,7 +275,7 @@ function App() {
             <>
               {/* Wizard */}
               <div className="w-full lg:w-[53%] h-full min-h-0">
-                <CaseWizard currentCaseId={currentCaseId} />
+                <CaseWizard currentCaseId={currentCaseId} userProfile={userProfile} />
               </div>
               {/* PDF Viewer */}
               <div className="w-full lg:w-[32%] h-full min-h-0">

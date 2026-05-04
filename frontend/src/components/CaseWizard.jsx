@@ -4,7 +4,7 @@ import { ArrowRight, ArrowLeft, FileText, Users, ClipboardList, Printer, CheckCi
 
 const STEP_LABELS = ['Clasificar Caso', 'Datos Generales', 'Datos Específicos', 'Generar Expediente'];
 
-export default function CaseWizard({ currentCaseId, onCaseNeeded }) {
+export default function CaseWizard({ currentCaseId, userProfile }) {
   const [step, setStep] = useState(0);
   const [rutas, setRutas] = useState([]);
   const [camposGenerales, setCamposGenerales] = useState([]);
@@ -103,7 +103,16 @@ export default function CaseWizard({ currentCaseId, onCaseNeeded }) {
               {rutas.map(ruta => (
                 <button
                   key={ruta.id}
-                  onClick={() => { setSelectedRuta(ruta); setStep(1); }}
+                  onClick={() => { 
+                    setSelectedRuta(ruta); 
+                    setGeneralData(prev => ({
+                      ...prev,
+                      responsable: userProfile?.nombre || prev.responsable || '',
+                      cargo: userProfile?.cargo || prev.cargo || '',
+                      sede: userProfile?.sede || prev.sede || ''
+                    }));
+                    setStep(1); 
+                  }}
                   className={`text-left p-4 rounded-xl border-2 transition-all hover:shadow-md ${
                     selectedRuta?.id === ruta.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300'
                   }`}
