@@ -268,9 +268,19 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       placeholder={campo.label}
                       rows={2}
                     />
+                  ) : campo.key === 'jornada' ? (
+                    <select
+                      value={generalData[campo.key] || ''}
+                      onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
+                      className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Seleccione jornada...</option>
+                      <option value="Mañana">Mañana</option>
+                      <option value="Tarde">Tarde</option>
+                    </select>
                   ) : (
                     <input
-                      type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : 'text'}
+                      type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : (campo.key.includes('documento') || campo.key.includes('telefono')) ? 'tel' : 'text'}
                       value={generalData[campo.key] || ''}
                       onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
                       className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -304,14 +314,24 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       return uniqueFields.map(campo => (
                         <div key={campo.key}>
                           <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
-                          {campo.key.includes('fecha') || campo.key.includes('hora') ? (
+                          {campo.key.includes('fecha') || campo.key.includes('hora') || campo.key.includes('documento') || campo.key.includes('telefono') ? (
                             <input
-                              type={campo.key.includes('fecha') ? 'date' : 'time'}
+                              type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : 'tel'}
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
                               className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                               placeholder={campo.label}
                             />
+                          ) : campo.key === 'jornada' ? (
+                            <select
+                              value={specificData[fmt.id]?.[campo.key] || ''}
+                              onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
+                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            >
+                              <option value="">Seleccione jornada...</option>
+                              <option value="Mañana">Mañana</option>
+                              <option value="Tarde">Tarde</option>
+                            </select>
                           ) : (
                             <textarea
                               value={specificData[fmt.id]?.[campo.key] || ''}
