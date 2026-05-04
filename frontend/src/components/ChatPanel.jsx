@@ -10,6 +10,24 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+    }
+  }, [input]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading) {
+        handleSend(e);
+      }
+    }
+  };
 
   // React to case changes
   useEffect(() => {
@@ -93,7 +111,7 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
   };
 
   const handleSend = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const newMessages = [...messages, { role: 'user', content: input }];
@@ -175,18 +193,20 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
       </div>
 
       <div className="p-4 bg-white border-t border-gray-100">
-        <form onSubmit={handleSend} className="flex gap-2">
-          <input
-            type="text"
+        <form onSubmit={handleSend} className="flex gap-2 items-end">
+          <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe el caso o solicita un formato..."
-            className="flex-1 rounded-xl border-gray-300 bg-gray-50 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"
+            onKeyDown={handleKeyDown}
+            placeholder="Describe el caso o solicita un formato... (Shift + Enter para salto de línea)"
+            rows={1}
+            className="flex-1 rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors resize-none overflow-y-auto min-h-[48px] max-h-[160px]"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="bg-indigo-600 text-white rounded-xl px-4 py-2 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+            className="bg-indigo-600 text-white rounded-xl px-4 h-[48px] hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center flex-shrink-0"
           >
             <Send size={20} />
           </button>
