@@ -154,17 +154,53 @@ function App() {
         
         {/* Header */}
         <div className="flex flex-col gap-2 shrink-0">
-          <header className="bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-3 mb-4 flex items-center justify-between z-20 relative transition-colors duration-300">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl shadow-inner border border-emerald-400">
-                <Shield className="text-white" size={24} strokeWidth={2.5} />
+          <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 mb-4 z-20 relative transition-colors duration-300 gap-3">
+            <div className="flex items-center justify-between w-full sm:w-auto">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl shadow-inner border border-emerald-400">
+                  <Shield className="text-white" size={24} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-indigo-600 dark:from-emerald-400 dark:to-indigo-400 drop-shadow-sm tracking-tight">
+                    ConciencIA
+                  </h1>
+                  <p className="hidden sm:block text-gray-400 dark:text-gray-500 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
+                </div>
               </div>
-              <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-indigo-600 dark:from-emerald-400 dark:to-indigo-400 ml-2 drop-shadow-sm tracking-tight">
-                ConciencIA
-              </h1>
-              <p className="hidden sm:block text-gray-400 dark:text-gray-500 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
+              <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className={`sm:hidden p-2 rounded-lg transition-colors flex items-center justify-center ${showSettings ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+              >
+                <Settings size={20} />
+              </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+              {/* Mode Toggle */}
+              <div className="flex items-center justify-center gap-1 bg-gray-100 dark:bg-slate-800 rounded-xl p-1 flex-1 sm:flex-initial">
+                <button
+                  onClick={() => handleModeChange('conciencia')}
+                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    mode === 'conciencia' 
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <Brain size={16} />
+                  <span className="hidden sm:inline">ConciencIA</span>
+                  <span className="sm:hidden">IA</span>
+                </button>
+                <button
+                  onClick={() => handleModeChange('orden')}
+                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    mode === 'orden' 
+                      ? 'bg-emerald-600 text-white shadow-sm' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <ListOrdered size={16} />
+                  Orden
+                </button>
+              </div>
               <button 
                 onClick={toggleDarkMode}
                 className="p-2 rounded-lg transition-colors items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
@@ -174,9 +210,10 @@ function App() {
               </button>
               <button 
                 onClick={() => setShowSettings(!showSettings)}
-                className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+                className={`hidden sm:flex p-2 rounded-lg transition-colors items-center gap-2 ${showSettings ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
               >
                 <Settings size={20} />
+                <span className="text-sm font-medium">Config</span>
               </button>
             </div>
           </header>
