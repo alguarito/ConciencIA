@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, AlertTriangle, ShieldAlert, BookOpen, Clock, FileText, ChevronRight, Loader2, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, ShieldAlert, BookOpen, Clock, FileText, ChevronRight, Loader2, BarChart3, Folder } from 'lucide-react';
 import axios from 'axios';
 
 export default function DashboardHome({ casos, rutas, onCreateCase }) {
