@@ -5,7 +5,7 @@ import PdfViewer from './components/PdfViewer';
 import CaseSidebar from './components/CaseSidebar';
 import CaseWizard from './components/CaseWizard';
 import axios from 'axios';
-import { Shield, Settings, Key, Brain, ListOrdered, UserCircle } from 'lucide-react';
+import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText } from 'lucide-react';
 
 function App() {
   const [steps, setSteps] = useState([]);
@@ -16,6 +16,7 @@ function App() {
   const [apiKeys, setApiKeys] = useState({ primary: '', fallback: '' });
   const [userProfile, setUserProfile] = useState({ nombre: '', cargo: '', sede: '' });
   const [mode, setMode] = useState('orden'); // 'conciencia' | 'orden'
+  const [mobileTab, setMobileTab] = useState('trabajo'); // 'casos' | 'trabajo' | 'documentos'
 
   // Case management state
   const [casos, setCasos] = useState([]);
@@ -239,9 +240,9 @@ function App() {
         </div>
 
         {/* Main Workspace */}
-        <main className="flex-1 flex flex-col lg:flex-row gap-3 min-h-0">
+        <main className="flex-1 flex flex-col lg:flex-row gap-3 min-h-0 relative pb-16 lg:pb-0">
           {/* Far Left: Case Sidebar */}
-          <div className="w-full lg:w-[15%] h-full min-h-0">
+          <div className={`w-full lg:w-[15%] h-full min-h-0 ${mobileTab === 'casos' ? 'block' : 'hidden lg:block'}`}>
             <CaseSidebar 
               casos={casos}
               currentCaseId={currentCaseId}
@@ -252,37 +253,65 @@ function App() {
 
           {mode === 'conciencia' ? (
             <>
-              {/* Checklist */}
-              <div className="w-full lg:w-[17%] h-full min-h-0">
-                <ProcessChecklist steps={steps} activeStepIndex={activeStepIndex} />
-              </div>
-              {/* Chat */}
-              <div className="w-full lg:w-[36%] h-full min-h-0">
-                <ChatPanel 
-                  apiKeys={apiKeys}
-                  casoId={currentCaseId}
-                  loadedMessages={loadedMessages}
-                  onUpdateSteps={handleUpdateSteps} 
-                  onGenerateFormat={handleGenerateFormat} 
-                />
-              </div>
-              {/* PDF Viewer */}
-              <div className="w-full lg:w-[32%] h-full min-h-0">
-                <PdfViewer pdfs={pdfs} activePdfIndex={activePdfIndex} setActivePdfIndex={setActivePdfIndex} removePdf={removePdf} />
+              {/* Workspace Container para ConciencIA */}
+              <div className={`w-full lg:w-[53%] h-full min-h-0 ${mobileTab === 'trabajo' ? 'flex' : 'hidden lg:flex'} flex-col lg:flex-row gap-3`}>
+                {/* Checklist */}
+                <div className="w-full lg:w-[32%] h-[200px] lg:h-full min-h-0 shrink-0 lg:shrink">
+                  <ProcessChecklist steps={steps} activeStepIndex={activeStepIndex} />
+                </div>
+                {/* Chat */}
+                <div className="w-full lg:w-[68%] h-full min-h-0">
+                  <ChatPanel 
+                    apiKeys={apiKeys}
+                    casoId={currentCaseId}
+                    loadedMessages={loadedMessages}
+                    onUpdateSteps={handleUpdateSteps} 
+                    onGenerateFormat={handleGenerateFormat} 
+                  />
+                </div>
               </div>
             </>
           ) : (
             <>
-              {/* Wizard */}
-              <div className="w-full lg:w-[53%] h-full min-h-0">
+              {/* Wizard para Orden */}
+              <div className={`w-full lg:w-[53%] h-full min-h-0 ${mobileTab === 'trabajo' ? 'block' : 'hidden lg:block'}`}>
                 <CaseWizard currentCaseId={currentCaseId} userProfile={userProfile} />
-              </div>
-              {/* PDF Viewer */}
-              <div className="w-full lg:w-[32%] h-full min-h-0">
-                <PdfViewer pdfs={pdfs} activePdfIndex={activePdfIndex} setActivePdfIndex={setActivePdfIndex} removePdf={removePdf} />
               </div>
             </>
           )}
+
+          {/* PDF Viewer */}
+          <div className={`w-full lg:w-[32%] h-full min-h-0 ${mobileTab === 'documentos' ? 'block' : 'hidden lg:block'}`}>
+            <PdfViewer pdfs={pdfs} activePdfIndex={activePdfIndex} setActivePdfIndex={setActivePdfIndex} removePdf={removePdf} />
+          </div>
+
+          {/* Mobile Bottom Navigation Bar */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around p-2 pb-safe z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+            <button 
+              onClick={() => setMobileTab('casos')}
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'casos' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Folder size={20} />
+              <span className="text-[10px] font-bold mt-1">Casos</span>
+            </button>
+            <button 
+              onClick={() => setMobileTab('trabajo')}
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'trabajo' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <LayoutDashboard size={20} />
+              <span className="text-[10px] font-bold mt-1">Área de Trabajo</span>
+            </button>
+            <button 
+              onClick={() => setMobileTab('documentos')}
+              className={`flex flex-col items-center p-2 relative rounded-lg transition-colors ${mobileTab === 'documentos' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <FileText size={20} />
+              <span className="text-[10px] font-bold mt-1">PDFs</span>
+              {pdfs.length > 0 && (
+                <span className="absolute top-1 right-2 w-3 h-3 bg-red-500 rounded-full border border-white"></span>
+              )}
+            </button>
+          </div>
         </main>
       </div>
     </div>
