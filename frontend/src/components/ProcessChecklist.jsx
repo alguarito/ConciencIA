@@ -4,17 +4,17 @@ import { CheckCircle, Circle, FileText } from 'lucide-react';
 export default function ProcessChecklist({ steps, activeStepIndex }) {
   if (!steps || steps.length === 0) {
     return (
-      <div className="h-full bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center text-gray-500">
-        <FileText size={48} className="mb-4 text-gray-300" />
-        <h2 className="text-xl font-semibold mb-2 text-gray-700">Plan de Acción</h2>
+      <div className="h-full bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400 transition-colors duration-300">
+        <FileText size={48} className="mb-4 text-gray-300 dark:text-gray-600" />
+        <h2 className="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-200">Plan de Acción</h2>
         <p className="text-sm">Inicia una consulta en el chat para que el asesor identifique los pasos del debido proceso.</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-6 overflow-y-auto">
-      <h2 className="text-xl font-bold mb-6 text-indigo-900 border-b pb-2">Plan de Acción</h2>
+    <div className="h-full bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-6 overflow-y-auto transition-colors duration-300 custom-scrollbar">
+      <h2 className="text-xl font-bold mb-6 text-indigo-900 dark:text-indigo-400 border-b border-gray-200 dark:border-slate-700 pb-2">Plan de Acción</h2>
       
       <div className="space-y-6">
         {steps.map((step, index) => {
@@ -31,10 +31,10 @@ export default function ProcessChecklist({ steps, activeStepIndex }) {
                 )}
               </div>
               <div>
-                <h3 className={`font-medium ${isCompleted ? 'line-through text-gray-500' : isActive ? 'text-indigo-800' : 'text-gray-700'}`}>
+                <h3 className={`font-medium ${isCompleted ? 'line-through text-gray-500 dark:text-gray-500' : isActive ? 'text-indigo-800 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-200'}`}>
                   {step.name}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">{step.description}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{step.description}</p>
               </div>
             </div>
           );

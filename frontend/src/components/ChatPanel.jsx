@@ -147,17 +147,17 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
 
   if (!casoId) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-8 text-center">
-        <Bot size={48} className="text-indigo-300 mb-4" />
-        <h2 className="text-xl font-bold text-gray-700 mb-2">Asesor de Debido Proceso</h2>
-        <p className="text-gray-400 text-sm max-w-xs">Selecciona un caso existente o crea uno nuevo en el panel izquierdo para comenzar la asesoría.</p>
+      <div className="h-full flex flex-col items-center justify-center bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-8 text-center transition-colors duration-300">
+        <Bot size={48} className="text-indigo-300 dark:text-indigo-500 mb-4" />
+        <h2 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">Asesor de Debido Proceso</h2>
+        <p className="text-gray-400 dark:text-gray-500 text-sm max-w-xs">Selecciona un caso existente o crea uno nuevo en el panel izquierdo para comenzar la asesoría.</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-      <div className="bg-indigo-900 text-white p-4 flex items-center gap-3">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
+      <div className="bg-indigo-900 dark:bg-indigo-950 text-white p-4 flex items-center gap-3">
         <Bot size={24} />
         <div>
           <h2 className="font-semibold text-lg">Asesor SMJ</h2>
@@ -171,8 +171,8 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-700'}`}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
-            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none shadow-sm'}`}>
-              <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-semibold">
+            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-tl-none shadow-sm'}`}>
+              <div className={`prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-semibold ${msg.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
               </div>
             </div>
@@ -183,16 +183,16 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
             <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center flex-shrink-0">
               <Bot size={16} />
             </div>
-            <div className="bg-gray-100 rounded-2xl rounded-tl-none p-4 flex items-center gap-2">
-              <Loader2 className="animate-spin text-gray-500" size={20} />
-              <span className="text-gray-500 text-sm">Analizando caso...</span>
+            <div className="bg-gray-100 dark:bg-slate-800 rounded-2xl rounded-tl-none p-4 flex items-center gap-2">
+              <Loader2 className="animate-spin text-gray-500 dark:text-gray-400" size={20} />
+              <span className="text-gray-500 dark:text-gray-400 text-sm">Analizando caso...</span>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 bg-white border-t border-gray-100">
+      <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
         <form onSubmit={handleSend} className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
@@ -201,7 +201,7 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
             onKeyDown={handleKeyDown}
             placeholder="Describe el caso o solicita un formato... (Shift + Enter para salto de línea)"
             rows={1}
-            className="flex-1 rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors resize-none overflow-y-auto min-h-[48px] max-h-[160px]"
+            className="flex-1 rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white transition-colors resize-none overflow-y-auto min-h-[48px] max-h-[160px]"
           />
           <button
             type="submit"
