@@ -13,6 +13,7 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
   const [specificData, setSpecificData] = useState({});
   const [generating, setGenerating] = useState(false);
   const [results, setResults] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('convivencia');
 
   const sharedFields = React.useMemo(() => {
     if (!selectedRuta) return [];
@@ -117,9 +118,30 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
         {step === 0 && (
           <div>
             <h3 className="text-lg font-bold text-gray-800 mb-1">¿Qué tipo de caso desea documentar?</h3>
-            <p className="text-sm text-gray-500 mb-4">Seleccione la ruta que corresponde según el Manual de Convivencia o SIEE.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {rutas.map(ruta => (
+            <p className="text-sm text-gray-500 mb-4">Seleccione el ámbito y luego la ruta legal correspondiente.</p>
+            
+            {/* Category Tabs */}
+            <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
+              <button
+                onClick={() => setActiveCategory('convivencia')}
+                className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeCategory === 'convivencia' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                🛡️ Convivencia Escolar
+              </button>
+              <button
+                onClick={() => setActiveCategory('academico')}
+                className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeCategory === 'academico' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                📚 Procesos Académicos
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {rutas.filter(r => r.categoria === activeCategory).map(ruta => (
                 <button
                   key={ruta.id}
                   onClick={() => { 
@@ -148,10 +170,22 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
                 >
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-bold text-gray-800">{ruta.nombre}</h4>
-                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">{ruta.total_formatos} docs</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${activeCategory === 'convivencia' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{ruta.total_formatos} docs</span>
                   </div>
                   <p className="text-sm text-gray-500 mb-2">{ruta.descripcion}</p>
-                  <p className="text-xs text-indigo-600 font-medium">{ruta.articulos}</p>
+                  
+                  {/* Badges/Etiquetas */}
+                  {ruta.etiquetas && ruta.etiquetas.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2 mt-1">
+                      {ruta.etiquetas.map((etiqueta, idx) => (
+                        <span key={idx} className={`text-[10px] px-2 py-0.5 rounded border ${activeCategory === 'convivencia' ? 'bg-orange-50 border-orange-100 text-orange-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                          {etiqueta}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <p className="text-[10px] text-gray-400 font-medium mt-1 uppercase tracking-wider">{ruta.articulos}</p>
                 </button>
               ))}
             </div>

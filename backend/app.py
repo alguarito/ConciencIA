@@ -260,16 +260,16 @@ sys.path.insert(0, os.path.join(BASE_DIR, "generated-skills", "smj-debido-proces
 from generar_formato_latex import FORMATOS, PAQUETES, LABELS, COMMON_FIELDS
 
 RUTA_DESCRIPTIONS = {
-    "falta-leve": {"nombre": "Falta Leve", "descripcion": "Incumplimientos menores al Manual de Convivencia", "articulos": "Arts. 37, 39, 42, 43"},
-    "falta-grave": {"nombre": "Falta Grave", "descripcion": "Incumplimientos graves que afectan la convivencia", "articulos": "Arts. 37, 42, 43"},
-    "falta-gravisima": {"nombre": "Falta Gravísima", "descripcion": "Conductas que atentan contra la integridad o la ley", "articulos": "Arts. 35, 42, 43"},
-    "situacion-tipo-i": {"nombre": "Situación Tipo I", "descripcion": "Conflictos manejados inadecuadamente sin daño al cuerpo o la salud", "articulos": "Art. 33"},
-    "situacion-tipo-ii": {"nombre": "Situación Tipo II", "descripcion": "Agresión escolar, acoso o ciberacoso (no delito)", "articulos": "Art. 34"},
-    "situacion-tipo-iii": {"nombre": "Situación Tipo III", "descripcion": "Conductas que constituyen presunto delito", "articulos": "Art. 35"},
-    "justicia-restaurativa": {"nombre": "Justicia Restaurativa", "descripcion": "Mediación y círculos restaurativos", "articulos": "Arts. 45, 46, 47"},
-    "reclamacion-academica": {"nombre": "Reclamación Académica", "descripcion": "Inconformidad con valoraciones o decisiones académicas", "articulos": "SIEE Art. 13"},
-    "promocion-posterior": {"nombre": "Promoción Posterior", "descripcion": "Solicitud de promoción fuera del periodo regular", "articulos": "SIEE Art. 3"},
-    "promocion-anticipada": {"nombre": "Promoción Anticipada", "descripcion": "Promoción antes de finalizar el año lectivo", "articulos": "SIEE Art. 3, literal 10"},
+    "falta-leve": {"nombre": "Falta Leve", "descripcion": "Incumplimientos menores al Manual de Convivencia", "articulos": "Arts. 37, 39, 42, 43", "categoria": "convivencia", "etiquetas": ["Llegadas tarde", "Uniforme", "Desorden leve"]},
+    "falta-grave": {"nombre": "Falta Grave", "descripcion": "Incumplimientos graves que afectan la convivencia", "articulos": "Arts. 37, 42, 43", "categoria": "convivencia", "etiquetas": ["Irrespeto reiterado", "Evasión de clase", "Fraude escolar"]},
+    "falta-gravisima": {"nombre": "Falta Gravísima", "descripcion": "Conductas que atentan contra la integridad o la ley", "articulos": "Arts. 35, 42, 43", "categoria": "convivencia", "etiquetas": ["Agresión grave", "Daño a la infraestructura", "Reincidencia"]},
+    "situacion-tipo-i": {"nombre": "Situación Tipo I", "descripcion": "Conflictos manejados inadecuadamente sin daño al cuerpo o la salud", "articulos": "Art. 33", "categoria": "convivencia", "etiquetas": ["Peleas verbales", "Chismes", "Discusiones sin lesiones"]},
+    "situacion-tipo-ii": {"nombre": "Situación Tipo II", "descripcion": "Agresión escolar, acoso o ciberacoso (no delito)", "articulos": "Art. 34", "categoria": "convivencia", "etiquetas": ["Bullying", "Ciberacoso", "Agresión física sin incapacidad"]},
+    "situacion-tipo-iii": {"nombre": "Situación Tipo III", "descripcion": "Conductas que constituyen presunto delito", "articulos": "Art. 35", "categoria": "convivencia", "etiquetas": ["Armas", "Drogas", "Abuso sexual", "Lesiones personales"]},
+    "justicia-restaurativa": {"nombre": "Justicia Restaurativa", "descripcion": "Mediación y círculos restaurativos", "articulos": "Arts. 45, 46, 47", "categoria": "convivencia", "etiquetas": ["Acuerdos", "Reparación", "Mediación voluntaria"]},
+    "reclamacion-academica": {"nombre": "Reclamación Académica", "descripcion": "Inconformidad con valoraciones o decisiones académicas", "articulos": "SIEE Art. 13", "categoria": "academico", "etiquetas": ["Revisión de notas", "Debido proceso evaluativo"]},
+    "promocion-posterior": {"nombre": "Promoción Posterior", "descripcion": "Solicitud de promoción fuera del periodo regular", "articulos": "SIEE Art. 3", "categoria": "academico", "etiquetas": ["Estudiante rezagado", "Aceleración de aprendizaje"]},
+    "promocion-anticipada": {"nombre": "Promoción Anticipada", "descripcion": "Promoción antes de finalizar el año lectivo", "articulos": "SIEE Art. 3, literal 10", "categoria": "academico", "etiquetas": ["Talento excepcional", "Rendimiento superior"]},
 }
 
 @app.get("/api/rutas")
@@ -301,6 +301,8 @@ async def get_rutas():
             "nombre": desc["nombre"],
             "descripcion": desc["descripcion"],
             "articulos": desc["articulos"],
+            "categoria": desc.get("categoria", "convivencia"),
+            "etiquetas": desc.get("etiquetas", []),
             "formatos": formatos,
             "total_formatos": len(formatos)
         })
