@@ -88,7 +88,7 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
       <div className="h-full flex flex-col items-center justify-center bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-8 text-center">
         <ClipboardList size={48} className="text-emerald-300 mb-4" />
         <h2 className="text-xl font-bold text-gray-700 mb-2">Modo Orden</h2>
-        <p className="text-gray-400 text-sm max-w-xs">Selecciona o crea un caso en el panel izquierdo para iniciar el proceso guiado.</p>
+        <p className="text-gray-400 text-sm max-w-xs">Selecciona o crea un caso en la pestaña de <strong>Casos</strong> para iniciar el proceso guiado.</p>
       </div>
     );
   }

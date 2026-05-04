@@ -123,50 +123,61 @@ function App() {
         
         {/* Header */}
         <div className="flex flex-col gap-2 shrink-0">
-          <header className="flex items-center justify-between px-6 py-3 bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-11 h-11 bg-indigo-600 rounded-full flex items-center justify-center text-white">
-                <Shield size={22} />
+          <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 gap-3">
+            <div className="flex items-center justify-between w-full sm:w-auto">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 shrink-0 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-sm">
+                  <Shield size={20} />
+                </div>
+                <div>
+                  <h1 className="text-[1.1rem] sm:text-xl font-bold text-gray-900 tracking-tight leading-tight">I.E. Sor María Juliana</h1>
+                  <p className="hidden sm:block text-gray-400 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">I.E. Sor María Juliana</h1>
-                <p className="text-gray-400 text-xs font-medium">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
-              </div>
-            </div>
-
-            {/* Mode Toggle */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-              <button
-                onClick={() => handleModeChange('conciencia')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  mode === 'conciencia' 
-                    ? 'bg-indigo-600 text-white shadow-md' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+              <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className={`sm:hidden p-2 rounded-lg transition-colors flex items-center justify-center ${showSettings ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}
               >
-                <Brain size={16} />
-                ConciencIA
-              </button>
-              <button
-                onClick={() => handleModeChange('orden')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  mode === 'orden' 
-                    ? 'bg-emerald-600 text-white shadow-md' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <ListOrdered size={16} />
-                Orden
+                <Settings size={20} />
               </button>
             </div>
 
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 rounded-lg transition-colors flex items-center gap-2 ${showSettings ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}
-            >
-              <Settings size={20} />
-              <span className="text-sm font-medium hidden sm:inline">Config</span>
-            </button>
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+              {/* Mode Toggle */}
+              <div className="flex items-center justify-center gap-1 bg-gray-100 rounded-xl p-1 flex-1 sm:flex-initial">
+                <button
+                  onClick={() => handleModeChange('conciencia')}
+                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    mode === 'conciencia' 
+                      ? 'bg-indigo-600 text-white shadow-md' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <Brain size={16} />
+                  <span className="hidden sm:inline">ConciencIA</span>
+                  <span className="sm:hidden">IA</span>
+                </button>
+                <button
+                  onClick={() => handleModeChange('orden')}
+                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    mode === 'orden' 
+                      ? 'bg-emerald-600 text-white shadow-md' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <ListOrdered size={16} />
+                  Orden
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className={`hidden sm:flex p-2 rounded-lg transition-colors items-center gap-2 ${showSettings ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Settings size={20} />
+                <span className="text-sm font-medium">Config</span>
+              </button>
+            </div>
           </header>
 
           {/* Settings */}
