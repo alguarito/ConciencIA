@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowRight, ArrowLeft, FileText, Users, ClipboardList, Printer, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay';
+import DashboardHome from './DashboardHome';
 
 const STEP_LABELS = ['Clasificar Caso', 'Datos Generales', 'Datos Específicos', 'Generar Expediente'];
 
-export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdfsGenerated }) {
+export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdfsGenerated, casos, onCreateCase }) {
   const [step, setStep] = useState(0);
   const [rutas, setRutas] = useState([]);
   const [camposGenerales, setCamposGenerales] = useState([]);
@@ -15,6 +16,18 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
   const [generating, setGenerating] = useState(false);
   const [results, setResults] = useState(null);
   const [activeCategory, setActiveCategory] = useState('convivencia');
+
+  // Autocompletado de estudiantes
+  const [studentsDb, setStudentsDb] = useState({});
+  const [studentSuggestions, setStudentSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const db = localStorage.getItem('smj_students_db');
+    if (db) {
+      try { setStudentsDb(JSON.parse(db)); } catch (e) {}
+    }
+  }, []);
 
   // Auto-cargar borradores
   useEffect(() => {
@@ -124,6 +137,17 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
           const newPdfs = successResults.map(r => ({ name: r.name, url: r.url }));
           onPdfsGenerated(newPdfs);
         }
+        // Guardar estudiante en la base de datos local
+        if (generalData.estudiante) {
+          const newDb = { ...studentsDb };
+          newDb[generalData.estudiante] = {
+            documento_estudiante: generalData.documento_estudiante || '',
+            grado: generalData.grado || '',
+            jornada: generalData.jornada || ''
+          };
+          localStorage.setItem('smj_students_db', JSON.stringify(newDb));
+          setStudentsDb(newDb);
+        }
       }
       
       const errorResults = response.data.results.filter(r => r.status === 'error');
@@ -140,19 +164,71 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
     }
   };
 
+  // --- Validación y Progreso ---
+  const isFieldFilled = (key) => {
+    if (generalData[key] && generalData[key].trim() !== '') return true;
+    for (const fmtId in specificData) {
+      if (specificData[fmtId] && specificData[fmtId][key] && specificData[fmtId][key].trim() !== '') return true;
+    }
+    return false;
+  };
+
+  const isFieldRequiredAndMissing = (key) => {
+    let isRequired = false;
+    if (camposGenerales.some(c => c.key === key) || sharedFields.some(c => c.key === key)) {
+      isRequired = true;
+    } else if (selectedRuta) {
+      for (const fmt of selectedRuta.formatos) {
+        if (getUniqueFieldsForFormat(fmt).some(c => c.key === key)) {
+          isRequired = true;
+          break;
+        }
+      }
+    }
+    if (!isRequired) return false;
+    return !isFieldFilled(key);
+  };
+
+  const missingCriticalFields = ['estudiante', 'descripcion_hechos', 'fecha'].filter(isFieldRequiredAndMissing);
+  const canGenerate = missingCriticalFields.length === 0;
+
+  let totalFieldsCount = 0;
+  let filledFieldsCount = 0;
+
+  if (selectedRuta) {
+    const allExpectedKeys = new Set([
+      ...camposGenerales.map(c => c.key),
+      ...sharedFields.map(c => c.key)
+    ]);
+    
+    selectedRuta.formatos.forEach(fmt => {
+      getUniqueFieldsForFormat(fmt).forEach(c => allExpectedKeys.add(c.key));
+    });
+
+    totalFieldsCount = allExpectedKeys.size;
+    allExpectedKeys.forEach(key => {
+      if (isFieldFilled(key)) filledFieldsCount++;
+    });
+  }
+  const progressPercentage = totalFieldsCount > 0 ? Math.round((filledFieldsCount / totalFieldsCount) * 100) : 0;
+
   if (!currentCaseId) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-8 text-center">
-        <ClipboardList size={48} className="text-emerald-300 mb-4" />
-        <h2 className="text-xl font-bold text-gray-700 mb-2">Modo Orden</h2>
-        <p className="text-gray-400 text-sm max-w-xs">Selecciona o crea un caso en la pestaña de <strong>Casos</strong> para iniciar el proceso guiado.</p>
-      </div>
-    );
+    return <DashboardHome casos={casos || []} rutas={rutas} onCreateCase={onCreateCase} />;
   }
 
   return (
-    <div className="h-full flex flex-col bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 overflow-hidden relative">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 overflow-hidden relative transition-colors duration-300">
       {generating && <LoadingOverlay title="Estructurando Expediente Legal" />}
+      
+      {/* ProgressBar (Top) */}
+      {selectedRuta && step > 0 && step < 3 && (
+        <div className="w-full bg-gray-200 h-1.5 absolute top-0 left-0 z-20">
+          <div 
+            className="bg-emerald-500 h-1.5 transition-all duration-500 ease-out" 
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+      )}
       
       {/* Stepper */}
       <div className="bg-emerald-900 text-white px-4 py-3">
@@ -175,15 +251,15 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
       <div className="flex-1 overflow-y-auto p-4">
         {step === 0 && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">¿Qué tipo de caso desea documentar?</h3>
-            <p className="text-sm text-gray-500 mb-4">Seleccione el ámbito y luego la ruta legal correspondiente.</p>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">Catálogo de Procedimientos</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Seleccione la ruta legal o disciplinaria que mejor se adapte a los hechos.</p>
             
             {/* Category Tabs */}
-            <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
+            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl mb-4 transition-colors">
               <button
                 onClick={() => setActiveCategory('convivencia')}
                 className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeCategory === 'convivencia' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  activeCategory === 'convivencia' ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 🛡️ Convivencia Escolar
@@ -191,7 +267,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
               <button
                 onClick={() => setActiveCategory('academico')}
                 className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeCategory === 'academico' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  activeCategory === 'academico' ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 📚 Procesos Académicos
@@ -223,27 +299,27 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                     setStep(1); 
                   }}
                   className={`text-left p-4 rounded-xl border-2 transition-all hover:shadow-md ${
-                    selectedRuta?.id === ruta.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300'
+                    selectedRuta?.id === ruta.id ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-500' : 'border-gray-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 dark:bg-slate-800/50'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-bold text-gray-800">{ruta.nombre}</h4>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${activeCategory === 'convivencia' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{ruta.total_formatos} docs</span>
+                    <h4 className="font-bold text-gray-800 dark:text-gray-200">{ruta.nombre}</h4>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${activeCategory === 'convivencia' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400'}`}>{ruta.total_formatos} docs</span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-2">{ruta.descripcion}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{ruta.descripcion}</p>
                   
                   {/* Badges/Etiquetas */}
                   {ruta.etiquetas && ruta.etiquetas.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-2 mt-1">
                       {ruta.etiquetas.map((etiqueta, idx) => (
-                        <span key={idx} className={`text-[10px] px-2 py-0.5 rounded border ${activeCategory === 'convivencia' ? 'bg-orange-50 border-orange-100 text-orange-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                        <span key={idx} className={`text-[10px] px-2 py-0.5 rounded border ${activeCategory === 'convivencia' ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-100 dark:border-orange-800/50 text-orange-700 dark:text-orange-400' : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-400'}`}>
                           {etiqueta}
                         </span>
                       ))}
                     </div>
                   )}
                   
-                  <p className="text-[10px] text-gray-400 font-medium mt-1 uppercase tracking-wider">{ruta.articulos}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mt-1 uppercase tracking-wider">{ruta.articulos}</p>
                 </button>
               ))}
             </div>
@@ -252,14 +328,18 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
 
         {step === 1 && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Datos Generales y Comunes del Caso</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">Datos Generales y Comunes del Caso</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Hemos agrupado la información repetitiva. Estos datos se compartirán automáticamente en los {selectedRuta?.total_formatos} formatos de la ruta <strong>{selectedRuta?.nombre}</strong>.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[...camposGenerales, ...sharedFields].map(campo => (
+              {[...camposGenerales, ...sharedFields].map(campo => {
+                const isCritical = ['estudiante', 'descripcion_hechos', 'fecha'].includes(campo.key);
+                return (
                 <div key={campo.key} className={campo.key.includes('descripcion') || campo.key.includes('norma') || campo.key.includes('hechos') || campo.key.includes('actuaciones') ? "md:col-span-2" : ""}>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    {campo.label} {isCritical && <span className="text-red-500">*</span>}
+                  </label>
                   {campo.key.includes('descripcion') || campo.key.includes('norma') || campo.key.includes('hechos') || campo.key.includes('actuaciones') ? (
                     <textarea
                       value={generalData[campo.key] || ''}
@@ -278,6 +358,52 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       <option value="Mañana">Mañana</option>
                       <option value="Tarde">Tarde</option>
                     </select>
+                  ) : campo.key === 'estudiante' ? (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={generalData[campo.key] || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          handleGeneralChange(campo.key, val);
+                          if (val.length > 1) {
+                            const matches = Object.keys(studentsDb).filter(name => name.toLowerCase().includes(val.toLowerCase()));
+                            setStudentSuggestions(matches);
+                            setShowSuggestions(matches.length > 0);
+                          } else {
+                            setShowSuggestions(false);
+                          }
+                        }}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        placeholder={campo.label}
+                      />
+                      {showSuggestions && (
+                        <div className="absolute z-30 w-full mt-1 bg-white border border-emerald-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                          {studentSuggestions.map(name => (
+                            <button
+                              key={name}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 text-gray-800 border-b border-gray-50 last:border-0"
+                              onClick={() => {
+                                const st = studentsDb[name];
+                                setGeneralData(prev => ({
+                                  ...prev,
+                                  estudiante: name,
+                                  documento_estudiante: st.documento_estudiante || prev.documento_estudiante || '',
+                                  grado: st.grado || prev.grado || '',
+                                  jornada: st.jornada || prev.jornada || ''
+                                }));
+                                setShowSuggestions(false);
+                                if (addToast) addToast(`Datos de ${name} autocompletados.`, 'success');
+                              }}
+                            >
+                              <div className="font-medium">{name}</div>
+                              <div className="text-[10px] text-emerald-600">Grado: {studentsDb[name].grado} | Doc: {studentsDb[name].documento_estudiante}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <input
                       type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : (campo.key.includes('documento') || campo.key.includes('telefono')) ? 'tel' : 'text'}
@@ -288,32 +414,37 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                     />
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {step === 2 && selectedRuta && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Datos Específicos por Formato</h3>
-            <p className="text-sm text-gray-500 mb-4">Complete los campos particulares de cada documento.</p>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">Datos Específicos por Formato</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Complete los campos particulares de cada documento.</p>
             <div className="space-y-4">
               {selectedRuta.formatos.map((fmt, idx) => (
-                <details key={fmt.id} className="border border-gray-200 rounded-xl overflow-hidden" open={idx === 0}>
-                  <summary className="px-4 py-3 bg-gray-50 cursor-pointer flex items-center gap-3 hover:bg-gray-100 transition-colors">
-                    <FileText size={16} className="text-emerald-600" />
-                    <span className="font-semibold text-sm text-gray-800">{idx + 1}. {fmt.titulo}</span>
-                    <span className="text-xs text-gray-400 ml-auto">{fmt.codigo}</span>
+                <details key={fmt.id} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden" open={idx === 0}>
+                  <summary className="px-4 py-3 bg-gray-50 dark:bg-slate-800 cursor-pointer flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700/80 transition-colors">
+                    <FileText size={16} className="text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">{idx + 1}. {fmt.titulo}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 ml-auto">{fmt.codigo}</span>
                   </summary>
-                  <div className="p-4 grid grid-cols-1 gap-3">
+                  <div className="p-4 grid grid-cols-1 gap-3 dark:bg-slate-900/50">
                     {(() => {
                       const uniqueFields = getUniqueFieldsForFormat(fmt);
                       if (uniqueFields.length === 0) {
-                        return <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm flex items-center gap-2"><CheckCircle2 size={16}/> Todos los campos requeridos para este formato ya fueron proporcionados en el paso anterior.</div>;
+                        return <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-3 rounded-lg text-sm flex items-center gap-2"><CheckCircle2 size={16}/> Todos los campos requeridos para este formato ya fueron proporcionados en el paso anterior.</div>;
                       }
-                      return uniqueFields.map(campo => (
+                      return uniqueFields.map(campo => {
+                        const isCritical = ['estudiante', 'descripcion_hechos', 'fecha'].includes(campo.key);
+                        return (
                         <div key={campo.key}>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            {campo.label} {isCritical && <span className="text-red-500">*</span>}
+                          </label>
                           {campo.key.includes('fecha') || campo.key.includes('hora') || campo.key.includes('documento') || campo.key.includes('telefono') ? (
                             <input
                               type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : 'tel'}
@@ -342,7 +473,8 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                             />
                           )}
                         </div>
-                      ));
+                        );
+                      });
                     })()}
                   </div>
                 </details>
@@ -353,8 +485,8 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
 
         {step === 3 && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Generar Expediente Completo</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">Generar Expediente Completo</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Se generarán <strong>{selectedRuta?.total_formatos} documentos</strong> para la ruta <strong>{selectedRuta?.nombre}</strong>.
             </p>
 
@@ -363,10 +495,14 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                 <Printer size={48} className="text-emerald-300 mx-auto mb-4" />
                 <button
                   onClick={handleGenerate}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition-all text-lg"
+                  disabled={!canGenerate}
+                  className={`${canGenerate ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} font-semibold px-8 py-3 rounded-xl transition-all text-lg mb-2`}
                 >
                   Generar Todos los Documentos
                 </button>
+                {!canGenerate && (
+                  <p className="text-sm text-red-500 font-medium">Faltan campos obligatorios: {missingCriticalFields.join(', ')}</p>
+                )}
               </div>
             )}
 

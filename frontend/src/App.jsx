@@ -5,7 +5,7 @@ import PdfViewer from './components/PdfViewer';
 import CaseSidebar from './components/CaseSidebar';
 import CaseWizard from './components/CaseWizard';
 import axios from 'axios';
-import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Shield, Settings, Key, Brain, ListOrdered, UserCircle, Folder, LayoutDashboard, FileText, CheckCircle, AlertCircle, Moon, Sun } from 'lucide-react';
 
 function App() {
   const [steps, setSteps] = useState([]);
@@ -18,6 +18,7 @@ function App() {
   const [mode, setMode] = useState('orden'); // 'conciencia' | 'orden'
   const [mobileTab, setMobileTab] = useState('trabajo'); // 'casos' | 'trabajo' | 'documentos'
   const [toasts, setToasts] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const addToast = (message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -43,7 +44,24 @@ function App() {
     }
     const savedMode = localStorage.getItem('smj_mode');
     if (savedMode) setMode(savedMode);
+    
+    const savedTheme = localStorage.getItem('smj_theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
   }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('smj_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('smj_theme', 'light');
+    }
+  };
 
   useEffect(() => { fetchCasos(); }, []);
 
@@ -131,130 +149,100 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 font-sans text-gray-800 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 font-sans text-gray-800 dark:text-gray-200 flex flex-col transition-colors duration-300">
       <div className="max-w-[1800px] w-full mx-auto h-[calc(100vh-2rem)] flex flex-col gap-3">
         
         {/* Header */}
         <div className="flex flex-col gap-2 shrink-0">
-          <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white bg-opacity-70 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 gap-3">
-            <div className="flex items-center justify-between w-full sm:w-auto">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 shrink-0 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-sm">
-                  <Shield size={20} />
-                </div>
-                <div>
-                  <h1 className="text-[1.1rem] sm:text-xl font-bold text-gray-900 tracking-tight leading-tight">I.E. Sor María Juliana</h1>
-                  <p className="hidden sm:block text-gray-400 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
-                </div>
+          <header className="bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-3 mb-4 flex items-center justify-between z-20 relative transition-colors duration-300">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl shadow-inner border border-emerald-400">
+                <Shield className="text-white" size={24} strokeWidth={2.5} />
               </div>
-              <button 
-                onClick={() => setShowSettings(!showSettings)}
-                className={`sm:hidden p-2 rounded-lg transition-colors flex items-center justify-center ${showSettings ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}
-              >
-                <Settings size={20} />
-              </button>
+              <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-indigo-600 dark:from-emerald-400 dark:to-indigo-400 ml-2 drop-shadow-sm tracking-tight">
+                ConciencIA
+              </h1>
+              <p className="hidden sm:block text-gray-400 dark:text-gray-500 text-xs font-medium mt-0.5">Sistema de Apoyo al Debido Proceso y SIEE — v2.0</p>
             </div>
-
-            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
-              {/* Mode Toggle */}
-              <div className="flex items-center justify-center gap-1 bg-gray-100 rounded-xl p-1 flex-1 sm:flex-initial">
-                <button
-                  onClick={() => handleModeChange('conciencia')}
-                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
-                    mode === 'conciencia' 
-                      ? 'bg-indigo-600 text-white shadow-md' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Brain size={16} />
-                  <span className="hidden sm:inline">ConciencIA</span>
-                  <span className="sm:hidden">IA</span>
-                </button>
-                <button
-                  onClick={() => handleModeChange('orden')}
-                  className={`flex-1 sm:flex-initial flex justify-center items-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
-                    mode === 'orden' 
-                      ? 'bg-emerald-600 text-white shadow-md' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <ListOrdered size={16} />
-                  Orden
-                </button>
-              </div>
-
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg transition-colors items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                title="Cambiar tema"
+              >
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
               <button 
                 onClick={() => setShowSettings(!showSettings)}
-                className={`hidden sm:flex p-2 rounded-lg transition-colors items-center gap-2 ${showSettings ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
               >
                 <Settings size={20} />
-                <span className="text-sm font-medium">Config</span>
               </button>
             </div>
           </header>
 
           {/* Settings */}
           {showSettings && (
-            <div className="bg-white bg-opacity-95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 p-5 mt-1 animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="bg-white dark:bg-slate-900 bg-opacity-95 dark:bg-opacity-95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 p-5 mt-1 animate-in fade-in slide-in-from-top-4 duration-200 transition-colors duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* User Profile Card */}
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-100 relative overflow-hidden shadow-inner">
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-200 rounded-full opacity-40 pointer-events-none"></div>
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl p-5 border border-emerald-100 dark:border-emerald-800 relative overflow-hidden shadow-inner">
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-200 dark:bg-emerald-900 rounded-full opacity-40 pointer-events-none"></div>
                   
-                  <div className="flex items-center gap-3 mb-4 text-emerald-800 relative z-10 border-b border-emerald-200 pb-3">
+                  <div className="flex items-center gap-3 mb-4 text-emerald-800 dark:text-emerald-400 relative z-10 border-b border-emerald-200 dark:border-emerald-800 pb-3">
                     <UserCircle size={24} className="text-emerald-600" />
                     <div>
                       <h3 className="font-bold text-sm leading-tight">Credencial del Docente</h3>
-                      <p className="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold">Autocompletado Activo</p>
+                      <p className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-500 font-semibold">Autocompletado Activo</p>
                     </div>
                   </div>
                   
                   <div className="space-y-4 relative z-10">
                     <div>
-                      <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Nombre Completo</label>
+                      <label className="block text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-1.5 ml-1">Nombre Completo</label>
                       <input type="text" value={userProfile.nombre} onChange={(e) => handleProfileChange('nombre', e.target.value)}
                         placeholder="Ej. María Fernanda López" 
-                        className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                        className="w-full text-sm rounded-lg border-emerald-200 dark:border-emerald-700 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300 dark:placeholder:text-emerald-800 dark:text-gray-200" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Cargo</label>
+                        <label className="block text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-1.5 ml-1">Cargo</label>
                         <input type="text" value={userProfile.cargo} onChange={(e) => handleProfileChange('cargo', e.target.value)}
                           placeholder="Ej. Coordinador" 
-                          className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                          className="w-full text-sm rounded-lg border-emerald-200 dark:border-emerald-700 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300 dark:placeholder:text-emerald-800 dark:text-gray-200" />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-emerald-800 mb-1.5 ml-1">Sede</label>
+                        <label className="block text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-1.5 ml-1">Sede</label>
                         <input type="text" value={userProfile.sede} onChange={(e) => handleProfileChange('sede', e.target.value)}
                           placeholder="Ej. Principal" 
-                          className="w-full text-sm rounded-lg border-emerald-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300" />
+                          className="w-full text-sm rounded-lg border-emerald-200 dark:border-emerald-700 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all placeholder:text-emerald-300 dark:placeholder:text-emerald-800 dark:text-gray-200" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* API Keys Card */}
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-100 shadow-inner">
-                  <div className="flex items-center gap-3 mb-4 text-indigo-800 border-b border-indigo-200 pb-3">
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-xl p-5 border border-indigo-100 dark:border-indigo-800 shadow-inner">
+                  <div className="flex items-center gap-3 mb-4 text-indigo-800 dark:text-indigo-400 border-b border-indigo-200 dark:border-indigo-800 pb-3">
                     <Key size={24} className="text-indigo-600" />
                     <div>
                       <h3 className="font-bold text-sm leading-tight">Motor de ConciencIA</h3>
-                      <p className="text-[10px] uppercase tracking-wider text-indigo-600 font-semibold">Conexión Segura</p>
+                      <p className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-500 font-semibold">Conexión Segura</p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold text-indigo-800 mb-1.5 ml-1">Clave API Principal (Gemini)</label>
+                      <label className="block text-xs font-semibold text-indigo-800 dark:text-indigo-300 mb-1.5 ml-1">Clave API Principal (Gemini)</label>
                       <input type="password" value={apiKeys.primary} onChange={(e) => handleKeyChange('primary', e.target.value)}
                         placeholder="AIzaSy..." 
-                        className="w-full text-sm rounded-lg border-indigo-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300" />
+                        className="w-full text-sm rounded-lg border-indigo-200 dark:border-indigo-700 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300 dark:placeholder:text-indigo-800 dark:text-gray-200" />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-indigo-800 mb-1.5 ml-1">Clave API Respaldo</label>
+                      <label className="block text-xs font-semibold text-indigo-800 dark:text-indigo-300 mb-1.5 ml-1">Clave API Respaldo</label>
                       <input type="password" value={apiKeys.fallback} onChange={(e) => handleKeyChange('fallback', e.target.value)}
                         placeholder="AIzaSy..." 
-                        className="w-full text-sm rounded-lg border-indigo-200 bg-white/80 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300" />
+                        className="w-full text-sm rounded-lg border-indigo-200 dark:border-indigo-700 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all placeholder:text-indigo-300 dark:placeholder:text-indigo-800 dark:text-gray-200" />
                     </div>
                   </div>
                 </div>
@@ -304,6 +292,8 @@ function App() {
                   currentCaseId={currentCaseId} 
                   userProfile={userProfile} 
                   addToast={addToast}
+                  casos={casos}
+                  onCreateCase={handleCreateCase}
                   onPdfsGenerated={(newPdfs) => {
                     setPdfs(prev => [...prev, ...newPdfs]);
                     setActivePdfIndex(pdfs.length);
@@ -320,24 +310,24 @@ function App() {
           </div>
 
           {/* Mobile Bottom Navigation Bar */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around p-2 pb-safe z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 flex items-center justify-around p-2 pb-safe z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] transition-colors duration-300">
             <button 
               onClick={() => setMobileTab('casos')}
-              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'casos' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'casos' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             >
               <Folder size={20} />
               <span className="text-[10px] font-bold mt-1">Casos</span>
             </button>
             <button 
               onClick={() => setMobileTab('trabajo')}
-              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'trabajo' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${mobileTab === 'trabajo' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             >
               <LayoutDashboard size={20} />
               <span className="text-[10px] font-bold mt-1">Área de Trabajo</span>
             </button>
             <button 
               onClick={() => setMobileTab('documentos')}
-              className={`flex flex-col items-center p-2 relative rounded-lg transition-colors ${mobileTab === 'documentos' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex flex-col items-center p-2 relative rounded-lg transition-colors ${mobileTab === 'documentos' ? 'text-purple-600 bg-purple-50 dark:bg-purple-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             >
               <FileText size={20} />
               <span className="text-[10px] font-bold mt-1">PDFs</span>
