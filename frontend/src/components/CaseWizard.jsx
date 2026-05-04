@@ -14,6 +14,25 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
   const [generating, setGenerating] = useState(false);
   const [results, setResults] = useState(null);
 
+  const sharedFields = React.useMemo(() => {
+    if (!selectedRuta) return [];
+    const counts = {};
+    const details = {};
+    selectedRuta.formatos.forEach(fmt => {
+      fmt.campos_especificos.forEach(campo => {
+        counts[campo.key] = (counts[campo.key] || 0) + 1;
+        if (!details[campo.key]) details[campo.key] = campo;
+      });
+    });
+    return Object.keys(counts)
+      .filter(key => counts[key] > 1)
+      .map(key => details[key]);
+  }, [selectedRuta]);
+
+  const getUniqueFieldsForFormat = (fmt) => {
+    return fmt.campos_especificos.filter(campo => !sharedFields.find(sf => sf.key === campo.key));
+  };
+
   useEffect(() => {
     axios.get('/api/rutas').then(res => {
       setRutas(res.data.rutas || []);
@@ -131,19 +150,31 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
 
         {step === 1 && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Datos Generales del Caso</h3>
-            <p className="text-sm text-gray-500 mb-4">Estos datos se compartirán en todos los formatos de la ruta <strong>{selectedRuta?.nombre}</strong>.</p>
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Datos Generales y Comunes del Caso</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Hemos agrupado la información repetitiva. Estos datos se compartirán automáticamente en los {selectedRuta?.total_formatos} formatos de la ruta <strong>{selectedRuta?.nombre}</strong>.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {camposGenerales.map(campo => (
-                <div key={campo.key}>
+              {[...camposGenerales, ...sharedFields].map(campo => (
+                <div key={campo.key} className={campo.key.includes('descripcion') || campo.key.includes('norma') || campo.key.includes('hechos') || campo.key.includes('actuaciones') ? "md:col-span-2" : ""}>
                   <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
-                  <input
-                    type="text"
-                    value={generalData[campo.key] || ''}
-                    onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
-                    className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder={campo.label}
-                  />
+                  {campo.key.includes('descripcion') || campo.key.includes('norma') || campo.key.includes('hechos') || campo.key.includes('actuaciones') ? (
+                    <textarea
+                      value={generalData[campo.key] || ''}
+                      onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
+                      className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y min-h-[60px]"
+                      placeholder={campo.label}
+                      rows={2}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={generalData[campo.key] || ''}
+                      onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
+                      className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={campo.label}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -163,10 +194,12 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
                     <span className="text-xs text-gray-400 ml-auto">{fmt.codigo}</span>
                   </summary>
                   <div className="p-4 grid grid-cols-1 gap-3">
-                    {fmt.campos_especificos.length === 0 ? (
-                      <p className="text-sm text-gray-400 italic">Este formato solo utiliza los datos generales.</p>
-                    ) : (
-                      fmt.campos_especificos.map(campo => (
+                    {(() => {
+                      const uniqueFields = getUniqueFieldsForFormat(fmt);
+                      if (uniqueFields.length === 0) {
+                        return <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm flex items-center gap-2"><CheckCircle2 size={16}/> Todos los campos requeridos para este formato ya fueron proporcionados en el paso anterior.</div>;
+                      }
+                      return uniqueFields.map(campo => (
                         <div key={campo.key}>
                           <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
                           <textarea
@@ -177,8 +210,8 @@ export default function CaseWizard({ currentCaseId, userProfile }) {
                             rows={2}
                           />
                         </div>
-                      ))
-                    )}
+                      ));
+                    })()}
                   </div>
                 </details>
               ))}
