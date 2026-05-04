@@ -270,7 +270,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                     />
                   ) : (
                     <input
-                      type="text"
+                      type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : 'text'}
                       value={generalData[campo.key] || ''}
                       onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
                       className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -304,13 +304,23 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       return uniqueFields.map(campo => (
                         <div key={campo.key}>
                           <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}</label>
-                          <textarea
-                            value={specificData[fmt.id]?.[campo.key] || ''}
-                            onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                            className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y min-h-[60px]"
-                            placeholder={campo.label}
-                            rows={2}
-                          />
+                          {campo.key.includes('fecha') || campo.key.includes('hora') ? (
+                            <input
+                              type={campo.key.includes('fecha') ? 'date' : 'time'}
+                              value={specificData[fmt.id]?.[campo.key] || ''}
+                              onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
+                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              placeholder={campo.label}
+                            />
+                          ) : (
+                            <textarea
+                              value={specificData[fmt.id]?.[campo.key] || ''}
+                              onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
+                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y min-h-[60px]"
+                              placeholder={campo.label}
+                              rows={2}
+                            />
+                          )}
                         </div>
                       ));
                     })()}
