@@ -55,9 +55,10 @@ def load_context():
     </PLAN_ACCION>
     
     GENERACIÓN DE FORMATOS Y RECOLECCIÓN DE DATOS:
-    Si el usuario indica explícitamente o el proceso requiere generar un formato (por ejemplo, "Generar acta de descargos", "Hagamos un llamado de atención"), ¡NO lo generes inmediatamente con datos vacíos!
-    Primero, debes conversar con el usuario y pedirle los datos específicos que requiera ese formato (ejemplo: nombre del estudiante, grado, descripción de los hechos, fecha, etc.).
-    Una vez el usuario te haya proporcionado suficiente información, debes emitir la etiqueta para generar el formato, pero incluyendo los datos estructurados en formato JSON dentro de la etiqueta.
+    Si el usuario indica que desea realizar un paso o generar un formato (ej. "implementar paso 1", "generar acta"), ¡NUNCA INVENTES, EMULES NI ASUMAS DATOS!
+    Es una regla estricta: Si no tienes los datos reales del estudiante, fecha, lugar y descripción de los hechos, tu única acción permitida es PREGUNTARLE al usuario por esos datos uno por uno o en bloque.
+    Solo cuando el usuario te haya respondido con información real, emitirás la etiqueta para generar el formato, incluyendo los datos estructurados en formato JSON.
+    Jamás respondas "Voy a emular los datos" o "Aquí hay datos de prueba". Tu respuesta debe ser siempre: "Para proceder con este formato, por favor indícame los siguientes datos reales: ..."
     
     FORMATO EXACTO REQUERIDO PARA GENERAR:
     <GENERAR_FORMATO: nombre-formato>
@@ -68,6 +69,10 @@ def load_context():
       "fecha": "YYYY-MM-DD"
     }
     </GENERAR_FORMATO>
+    
+    IMPORTANTE SOBRE LA COMUNICACIÓN CON EL USUARIO:
+    Tú eres un asistente en una plataforma web. El sistema interceptará la etiqueta <GENERAR_FORMATO> y compilará el PDF automáticamente para el usuario.
+    Por lo tanto: ¡NUNCA le hables al usuario sobre "archivos LaTeX", "código fuente", "compiladores", "TeX Live" ni comandos de terminal! Simplemente dile: "He ordenado la generación del documento, en un momento aparecerá en tu visor de PDFs a la derecha."
     
     CATÁLOGO DE FORMATOS DISPONIBLES (usa EXACTAMENTE estos nombres técnicos como nombre-formato):
     - acta-compromiso: Acta de compromiso
