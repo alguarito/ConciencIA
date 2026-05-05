@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Folder, Plus, ChevronRight, Search } from 'lucide-react';
 import axios from 'axios';
 
-export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCreateCase }) {
+export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCreateCase, addToast }) {
   const [isCreating, setIsCreating] = useState(false);
   const [newCaseName, setNewCaseName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +18,9 @@ export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCrea
       setIsCreating(false);
     } catch (error) {
       console.error("Error creating case:", error);
+      if (addToast) {
+        addToast(`❌ Error al crear caso: ${error.response?.status || ''} ${error.message}`, 'error');
+      }
     }
   };
 

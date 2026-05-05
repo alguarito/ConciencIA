@@ -213,7 +213,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
   const progressPercentage = totalFieldsCount > 0 ? Math.round((filledFieldsCount / totalFieldsCount) * 100) : 0;
 
   if (!currentCaseId) {
-    return <DashboardHome casos={casos || []} rutas={rutas} onCreateCase={onCreateCase} />;
+    return <DashboardHome casos={casos || []} rutas={rutas} onCreateCase={onCreateCase} addToast={addToast} />;
   }
 
   return (

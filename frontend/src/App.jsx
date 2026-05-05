@@ -330,6 +330,7 @@ function App() {
               currentCaseId={currentCaseId}
               onSelectCase={handleSelectCase}
               onCreateCase={handleCreateCase}
+              addToast={addToast}
             />
           </div>
 
@@ -361,9 +362,8 @@ function App() {
                 <CaseWizard 
                   currentCaseId={currentCaseId} 
                   userProfile={userProfile} 
-                  addToast={addToast}
-                  casos={casos}
                   onCreateCase={handleCreateCase}
+                  addToast={addToast}
                   onPdfsGenerated={(newPdfs) => {
                     setPdfs(prev => [...prev, ...newPdfs]);
                     setActivePdfIndex(pdfs.length);

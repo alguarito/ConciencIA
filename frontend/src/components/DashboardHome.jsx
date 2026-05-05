@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LayoutDashboard, AlertTriangle, ShieldAlert, BookOpen, Clock, FileText, ChevronRight, Loader2, BarChart3, Folder } from 'lucide-react';
 import axios from 'axios';
 
-export default function DashboardHome({ casos, rutas, onCreateCase }) {
+export default function DashboardHome({ casos, rutas, onCreateCase, addToast }) {
   const [loadingRoute, setLoadingRoute] = useState(null);
 
   const stats = {
@@ -39,6 +39,9 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
       
     } catch (err) {
       console.error("Error creating quick case:", err);
+      if (addToast) {
+        addToast(`❌ Error en inicio rápido: ${err.response?.status || ''} ${err.message}`, 'error');
+      }
     } finally {
       setLoadingRoute(null);
     }
