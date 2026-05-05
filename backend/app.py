@@ -411,6 +411,6 @@ if os.path.exists(FRONTEND_DIST):
 
 if __name__ == "__main__":
     import uvicorn
-    # Puerto por defecto 8000 (Vite proxy) o variable de entorno PORT
-    port = int(os.environ.get("PORT", 8000))
+    # Puerto por defecto 7860 (HuggingFace/Render Docker) o variable de entorno PORT
+    port = int(os.environ.get("PORT", 7860))
     uvicorn.run(app, host="0.0.0.0", port=port)
