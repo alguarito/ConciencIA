@@ -2,34 +2,24 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-secondary: var(--brand-secondary);
-  --color-brand-accent: var(--brand-accent);
-  --color-brand-bg: var(--brand-bg);
+  /* Colores base (Tema Original) */
+  --color-brand-primary: #059669; /* emerald-600 */
+  --color-brand-secondary: #4f46e5; /* indigo-600 */
+  --color-brand-accent: #10b981; /* emerald-500 */
+  --color-brand-bg: #f8fafc; /* slate-50 */
 }
 
-:root {
-  /* Tema Original: Esmeralda / Índigo */
-  --brand-primary: #059669; /* emerald-600 */
-  --brand-secondary: #4f46e5; /* indigo-600 */
-  --brand-accent: #10b981; /* emerald-500 */
-  --brand-bg: #f8fafc; /* slate-50 */
-}
-
+/* Redefinición de variables por tema */
 .theme-smj {
-  /* Tema Institucional: Azul Rey / Oro */
-  --brand-primary: #1d4ed8; /* blue-700 */
-  --brand-secondary: #f59e0b; /* amber-500 */
-  --brand-accent: #3b82f6; /* blue-500 */
-  --brand-bg: #f8fafc;
+  --color-brand-primary: #1d4ed8; /* blue-700 */
+  --color-brand-secondary: #f59e0b; /* amber-500 */
+  --color-brand-accent: #3b82f6; /* blue-500 */
 }
 
 .theme-vino {
-  /* Tema Elegante: Azul / Vino Tinto */
-  --brand-primary: #1d4ed8; /* blue-700 */
-  --brand-secondary: #800020; /* vino tinto / burgundy */
-  --brand-accent: #991b1b; /* red-800 */
-  --brand-bg: #f8fafc;
+  --color-brand-primary: #1d4ed8; /* blue-700 */
+  --color-brand-secondary: #800020; /* vino tinto */
+  --color-brand-accent: #991b1b; /* red-800 */
 }
 
 body {
