@@ -224,24 +224,24 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
       {selectedRuta && step > 0 && step < 3 && (
         <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 absolute top-0 left-0 z-20">
           <div 
-            className="bg-amber-500 h-1.5 transition-all duration-500 ease-out shadow-[0_0_8px_rgba(245,158,11,0.6)]" 
+            className="bg-brand-secondary h-1.5 transition-all duration-500 ease-out shadow-[0_0_8px_var(--brand-secondary)]" 
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
       )}
       
       {/* Stepper */}
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-4 py-3 border-b border-blue-950/50">
+      <div className="bg-gradient-to-r from-brand-primary to-brand-primary/80 text-white px-4 py-3 border-b border-white/10 shadow-md relative z-10">
         <div className="flex items-center justify-between">
           {STEP_LABELS.map((label, i) => (
             <div key={i} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                i < step ? 'bg-amber-400 text-amber-900 shadow-[0_0_10px_rgba(251,191,36,0.4)]' : i === step ? 'bg-white text-blue-900 ring-2 ring-amber-400 ring-offset-2 ring-offset-blue-800' : 'bg-blue-800/50 text-blue-300 border border-blue-700/50'
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                i < step ? 'bg-brand-secondary text-white shadow-lg' : i === step ? 'bg-white text-brand-primary ring-2 ring-brand-secondary ring-offset-2 ring-offset-brand-primary' : 'bg-white/10 text-white/50 border border-white/20'
               }`}>
                 {i < step ? '✓' : i + 1}
               </div>
-              <span className={`text-xs hidden lg:inline ${i === step ? 'text-white font-bold tracking-wide' : i < step ? 'text-amber-100' : 'text-blue-300/70'}`}>{label}</span>
-              {i < STEP_LABELS.length - 1 && <div className={`w-4 lg:w-8 h-px mx-1 ${i < step ? 'bg-amber-400/50' : 'bg-blue-700/50'}`} />}
+              <span className={`text-[10px] uppercase tracking-widest hidden lg:inline ${i === step ? 'text-white font-black' : i < step ? 'text-white/90' : 'text-white/40'}`}>{label}</span>
+              {i < STEP_LABELS.length - 1 && <div className={`w-4 lg:w-8 h-0.5 mx-1 rounded-full ${i < step ? 'bg-brand-secondary' : 'bg-white/10'}`} />}
             </div>
           ))}
         </div>
@@ -450,14 +450,14 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                               type={campo.key.includes('fecha') ? 'date' : campo.key.includes('hora') ? 'time' : 'tel'}
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
                               placeholder={campo.label}
                             />
                           ) : campo.key === 'jornada' ? (
                             <select
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
                             >
                               <option value="">Seleccione jornada...</option>
                               <option value="Mañana">Mañana</option>
@@ -467,7 +467,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                             <textarea
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px]"
+                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[60px]"
                               placeholder={campo.label}
                               rows={2}
                             />
@@ -492,13 +492,13 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
 
             {!results && !generating && (
               <div className="text-center py-8">
-                <Printer size={48} className="text-blue-400 mx-auto mb-4" />
+                <Printer size={56} className="text-brand-primary mx-auto mb-4 opacity-50" />
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate}
-                  className={`${canGenerate ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl ring-2 ring-transparent hover:ring-amber-500/50' : 'bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed'} font-bold px-8 py-3 rounded-xl transition-all text-lg mb-2`}
+                  className={`${canGenerate ? 'bg-gradient-to-r from-brand-primary to-brand-primary/80 hover:brightness-110 text-white shadow-xl hover:shadow-2xl ring-2 ring-transparent hover:ring-brand-secondary/50' : 'bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed'} font-black px-10 py-4 rounded-2xl transition-all text-xl mb-2 uppercase tracking-tighter`}
                 >
-                  Generar Todos los Documentos
+                  Generar Expediente Completo
                 </button>
                 {!canGenerate && (
                   <p className="text-sm text-amber-600 dark:text-amber-500 font-semibold">Faltan campos obligatorios: {missingCriticalFields.join(', ')}</p>
@@ -507,29 +507,29 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
             )}
 
             {generating && (
-              <div className="text-center py-8">
-                <Loader2 size={48} className="text-amber-500 mx-auto mb-4 animate-spin drop-shadow-md" />
-                <p className="text-slate-600 dark:text-slate-400 font-semibold">Compilando documentos legales...</p>
+              <div className="text-center py-12">
+                <Loader2 size={56} className="text-brand-secondary mx-auto mb-4 animate-spin drop-shadow-md" />
+                <p className="text-slate-600 dark:text-slate-400 font-black uppercase tracking-widest text-sm">Estructurando protocolos legales...</p>
               </div>
             )}
 
             {results && (
               <div className="space-y-2">
                 {results.map((r, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border shadow-sm ${
-                    r.status === 'success' ? 'border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/30' : 'border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30'
+                  <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border shadow-sm transition-all ${
+                    r.status === 'success' ? 'border-brand-primary/20 bg-brand-primary/5' : 'border-brand-secondary/20 bg-brand-secondary/5'
                   }`}>
                     {r.status === 'success' ? (
-                      <CheckCircle2 size={20} className="text-blue-600 dark:text-blue-500 shrink-0" />
+                      <CheckCircle2 size={20} className="text-brand-primary shrink-0" />
                     ) : (
-                      <AlertCircle size={20} className="text-amber-500 shrink-0" />
+                      <AlertCircle size={20} className="text-brand-secondary shrink-0" />
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{r.name || r.id}</p>
-                      {r.status === 'error' && <p className="text-xs text-amber-600 dark:text-amber-500 font-medium">{r.message}</p>}
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.name || r.id}</p>
+                      {r.status === 'error' && <p className="text-xs text-brand-secondary/80 font-medium">{r.message}</p>}
                     </div>
                     {r.status === 'success' && r.url && (
-                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 font-bold hover:underline bg-white dark:bg-slate-900 px-3 py-1 rounded-md shadow-sm border border-blue-100 dark:border-slate-700">
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-brand-primary font-black hover:underline bg-white dark:bg-slate-900 px-3 py-2 rounded-lg shadow-sm border border-brand-primary/10">
                         Ver PDF
                       </a>
                     )}
@@ -554,7 +554,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
           <button
             onClick={() => setStep(s => Math.min(3, s + 1))}
             disabled={step === 0 && !selectedRuta}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm ring-2 ring-transparent hover:ring-amber-500/30"
+            className="flex items-center gap-2 px-5 py-2 text-sm font-bold bg-brand-primary text-white rounded-lg hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-md ring-2 ring-transparent hover:ring-brand-secondary/30"
           >
             Siguiente <ArrowRight size={16} />
           </button>

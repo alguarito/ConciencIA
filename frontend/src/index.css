@@ -24,6 +24,14 @@
   --brand-bg: #f8fafc;
 }
 
+.theme-vino {
+  /* Tema Elegante: Azul / Vino Tinto */
+  --brand-primary: #1d4ed8; /* blue-700 */
+  --brand-secondary: #800020; /* vino tinto / burgundy */
+  --brand-accent: #991b1b; /* red-800 */
+  --brand-bg: #f8fafc;
+}
+
 body {
   @apply bg-brand-bg text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300;
 }

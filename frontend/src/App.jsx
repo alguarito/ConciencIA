@@ -159,7 +159,7 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-brand-bg dark:bg-slate-950 p-4 font-sans text-slate-800 dark:text-slate-200 flex flex-col transition-colors duration-300 relative ${visualTheme === 'smj' ? 'theme-smj' : ''}`}>
+    <div className={`min-h-screen bg-brand-bg dark:bg-slate-950 p-4 font-sans text-slate-800 dark:text-slate-200 flex flex-col transition-colors duration-300 relative ${visualTheme === 'smj' ? 'theme-smj' : visualTheme === 'vino' ? 'theme-vino' : ''}`}>
       {generatingFormat && <LoadingOverlay title={`Generando Expediente Legal...`} />}
       <div className="max-w-[1800px] w-full mx-auto h-[calc(100vh-2rem)] flex flex-col gap-3">
         
@@ -168,14 +168,14 @@ function App() {
           <header className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 bg-opacity-95 dark:bg-opacity-95 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 mb-4 z-20 relative transition-colors duration-300 gap-3">
             <div className="flex items-center justify-between w-full sm:w-auto">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl overflow-hidden shadow-sm border border-blue-100 dark:border-slate-700 bg-white flex items-center justify-center p-0.5">
+                <div className="w-11 h-11 rounded-xl overflow-hidden shadow-sm border border-brand-primary/10 dark:border-slate-700 bg-white flex items-center justify-center p-0.5">
                   <img src="/logo.png" alt="Escudo Sor María Juliana" className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500 dark:from-blue-400 dark:to-blue-300 drop-shadow-sm tracking-tight">
+                  <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-accent drop-shadow-sm tracking-tight">
                     ConciencIA
                   </h1>
-                  <p className="hidden sm:block text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">I.E. Sor María Juliana — Debido Proceso y SIEE</p>
+                  <p className="hidden sm:block text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5 uppercase tracking-tighter">Due Process Advisor</p>
                 </div>
               </div>
               <button 
@@ -249,23 +249,23 @@ function App() {
                   
                   <div className="space-y-4 relative z-10">
                     <div>
-                      <label className="block text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1.5 ml-1">Nombre Completo</label>
+                      <label className="block text-xs font-semibold text-brand-primary dark:text-brand-accent mb-1.5 ml-1 uppercase tracking-tight">Nombre Completo</label>
                       <input type="text" value={userProfile.nombre} onChange={(e) => handleProfileChange('nombre', e.target.value)}
                         placeholder="Ej. María Fernanda López" 
-                        className="w-full text-sm rounded-lg border-blue-200/70 dark:border-blue-800 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm transition-all placeholder:text-blue-300 dark:placeholder:text-blue-800 dark:text-slate-200" />
+                        className="w-full text-sm rounded-lg border-brand-primary/20 dark:border-brand-primary/40 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-secondary shadow-sm transition-all dark:text-slate-200" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1.5 ml-1">Cargo</label>
+                        <label className="block text-xs font-semibold text-brand-primary dark:text-brand-accent mb-1.5 ml-1 uppercase tracking-tight">Cargo</label>
                         <input type="text" value={userProfile.cargo} onChange={(e) => handleProfileChange('cargo', e.target.value)}
                           placeholder="Ej. Coordinador" 
-                          className="w-full text-sm rounded-lg border-blue-200/70 dark:border-blue-800 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm transition-all placeholder:text-blue-300 dark:placeholder:text-blue-800 dark:text-slate-200" />
+                          className="w-full text-sm rounded-lg border-brand-primary/20 dark:border-brand-primary/40 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-secondary shadow-sm transition-all dark:text-slate-200" />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1.5 ml-1">Sede</label>
+                        <label className="block text-xs font-semibold text-brand-primary dark:text-brand-accent mb-1.5 ml-1 uppercase tracking-tight">Sede</label>
                         <input type="text" value={userProfile.sede} onChange={(e) => handleProfileChange('sede', e.target.value)}
                           placeholder="Ej. Principal" 
-                          className="w-full text-sm rounded-lg border-blue-200/70 dark:border-blue-800 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm transition-all placeholder:text-blue-300 dark:placeholder:text-blue-800 dark:text-slate-200" />
+                          className="w-full text-sm rounded-lg border-brand-primary/20 dark:border-brand-primary/40 bg-white/80 dark:bg-slate-950/50 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-secondary shadow-sm transition-all dark:text-slate-200" />
                       </div>
                     </div>
                   </div>
@@ -293,18 +293,24 @@ function App() {
                     {/* Theme Selector inside settings */}
                     <div className="pt-2 border-t border-brand-secondary/20">
                       <label className="block text-xs font-semibold text-brand-secondary dark:text-brand-secondary mb-2 ml-1 uppercase tracking-tighter">Personalización Visual</label>
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <button 
                           onClick={() => toggleVisualTheme('original')}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold border transition-all ${visualTheme === 'original' ? 'bg-emerald-600 text-white border-emerald-500 shadow-md ring-2 ring-emerald-500/20' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
+                          className={`py-2 rounded-lg text-[9px] font-bold border transition-all ${visualTheme === 'original' ? 'bg-emerald-600 text-white border-emerald-500 shadow-md ring-2 ring-emerald-500/20' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
                         >
-                          TEMA ORIGINAL
+                          ORIGINAL
                         </button>
                         <button 
                           onClick={() => toggleVisualTheme('smj')}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold border transition-all ${visualTheme === 'smj' ? 'bg-blue-700 text-white border-blue-600 shadow-md ring-2 ring-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
+                          className={`py-2 rounded-lg text-[9px] font-bold border transition-all ${visualTheme === 'smj' ? 'bg-blue-700 text-white border-blue-600 shadow-md ring-2 ring-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
                         >
-                          INSTITUCIONAL SMJ
+                          AZUL/ORO
+                        </button>
+                        <button 
+                          onClick={() => toggleVisualTheme('vino')}
+                          className={`py-2 rounded-lg text-[9px] font-bold border transition-all ${visualTheme === 'vino' ? 'bg-[#800020] text-white border-[#800020] shadow-md ring-2 ring-[#800020]/20' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
+                        >
+                          AZUL/VINO
                         </button>
                       </div>
                     </div>

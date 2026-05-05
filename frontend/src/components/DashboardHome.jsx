@@ -49,7 +49,7 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
       
       {/* Header */}
       <div className="flex items-center gap-3 mb-8 relative z-10">
-        <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 flex items-center justify-center shadow-sm border border-blue-200 dark:border-blue-800/50">
+        <div className="w-12 h-12 rounded-xl bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-accent flex items-center justify-center shadow-sm border border-brand-primary/20 dark:border-brand-primary/40">
           <LayoutDashboard size={24} />
         </div>
         <div>
@@ -60,31 +60,31 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 relative z-10">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 dark:from-slate-800 dark:to-slate-900 p-5 rounded-2xl shadow-md border border-blue-500/50 dark:border-slate-700 flex items-center justify-between relative overflow-hidden">
+        <div className="bg-gradient-to-br from-brand-primary to-brand-primary/80 dark:from-slate-800 dark:to-slate-900 p-5 rounded-2xl shadow-md border border-brand-primary/20 dark:border-slate-700 flex items-center justify-between relative overflow-hidden">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl pointer-events-none"></div>
           <div className="relative z-10">
-            <p className="text-sm font-medium text-blue-100 dark:text-slate-400 mb-1">Total Casos</p>
+            <p className="text-sm font-medium text-white/70 dark:text-slate-400 mb-1">Total Casos</p>
             <h3 className="text-3xl font-black text-white">{stats.total}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-white/20 dark:bg-blue-900/50 text-white dark:text-blue-400 flex items-center justify-center relative z-10 backdrop-blur-sm border border-white/30 dark:border-slate-700">
+          <div className="w-12 h-12 rounded-full bg-white/20 dark:bg-brand-primary/50 text-white dark:text-brand-accent flex items-center justify-center relative z-10 backdrop-blur-sm border border-white/30 dark:border-slate-700">
             <Folder size={24} />
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-amber-200 dark:hover:border-amber-900/50 transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-brand-secondary/30 dark:hover:border-brand-secondary/50 transition-colors">
           <div>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Convivencia</p>
-            <h3 className="text-3xl font-bold text-amber-500 dark:text-amber-400">~{stats.convivencia}</h3>
+            <h3 className="text-3xl font-bold text-brand-secondary dark:text-brand-secondary/90">~{stats.convivencia}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 rounded-full bg-brand-secondary/10 dark:bg-brand-secondary/20 text-brand-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
             <ShieldAlert size={24} />
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-blue-200 dark:hover:border-blue-900/50 transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-brand-primary/20 dark:hover:border-brand-primary/50 transition-colors">
           <div>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Académicos</p>
-            <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400">~{stats.academico}</h3>
+            <h3 className="text-3xl font-bold text-brand-primary dark:text-brand-accent">~{stats.academico}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 rounded-full bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-accent flex items-center justify-center group-hover:scale-110 transition-transform">
             <BookOpen size={24} />
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
       {/* Quick Actions */}
       <div className="relative z-10">
         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-          <BarChart3 size={20} className="text-blue-500" />
+          <BarChart3 size={20} className="text-brand-primary" />
           Accesos Rápidos
         </h3>
         
