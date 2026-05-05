@@ -3,6 +3,9 @@ import json
 import subprocess
 import io
 import zipfile
+import time
+import re
+import shutil
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +13,23 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import google.generativeai as genai
+
+# Supabase
+from supabase import create_client, Client
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+
+supabase_client: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print(f"[Supabase] Connected to {SUPABASE_URL}")
+    except Exception as e:
+        print(f"[Supabase] Failed to connect: {e}")
+        supabase_client = None
+else:
+    print("[Supabase] No credentials found, using filesystem fallback")
 
 app = FastAPI()
 
@@ -125,67 +145,109 @@ class CasoCreateRequest(BaseModel):
 
 @app.get("/api/casos")
 async def get_casos():
+    if supabase_client:
+        try:
+            result = supabase_client.table('casos').select('id, nombre, created_at').order('created_at', desc=True).execute()
+            return {"casos": result.data}
+        except Exception as e:
+            print(f"[Supabase] Error fetching cases: {e}")
+    # Filesystem fallback
     casos = []
     if os.path.exists(CASOS_DIR):
         for item in os.listdir(CASOS_DIR):
-            item_path = os.path.join(CASOS_DIR, item)
-            if os.path.isdir(item_path):
-                # Try to read the name if we want, or just use the folder name
+            if os.path.isdir(os.path.join(CASOS_DIR, item)):
                 casos.append({"id": item, "nombre": item})
-    # Sort cases chronologically based on creation time or simply alphabetically
     casos.sort(key=lambda x: x["id"], reverse=True)
     return {"casos": casos}
 
 @app.post("/api/casos")
 async def create_caso(request: CasoCreateRequest):
-    import time
     timestamp = int(time.time())
-    import re
-    # Create safe folder name
     safe_nombre = re.sub(r'[^a-zA-Z0-9]', '_', request.nombre)
     caso_id = f"caso_{timestamp}_{safe_nombre}"
     
+    # Always create local dir for PDF compilation
     caso_path = os.path.join(CASOS_DIR, caso_id)
-    docs_path = os.path.join(caso_path, "documentos")
-    os.makedirs(docs_path, exist_ok=True)
+    os.makedirs(os.path.join(caso_path, "documentos"), exist_ok=True)
+    
+    if supabase_client:
+        try:
+            supabase_client.table('casos').insert({
+                "id": caso_id,
+                "nombre": request.nombre
+            }).execute()
+        except Exception as e:
+            print(f"[Supabase] Error creating case: {e}")
     
     return {"id": caso_id, "nombre": request.nombre}
 
 @app.get("/api/casos/{caso_id}")
 async def get_caso_details(caso_id: str):
-    history_path = os.path.join(CASOS_DIR, caso_id, "chat_history.json")
     messages = []
-    if os.path.exists(history_path):
-        with open(history_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            messages = data.get("messages", [])
-            
-    # Find PDFs
     pdfs = []
-    docs_path = os.path.join(CASOS_DIR, caso_id, "documentos")
-    if os.path.exists(docs_path):
-        for item in os.listdir(docs_path):
-            if item.endswith(".pdf"):
+    
+    if supabase_client:
+        try:
+            # Get chat messages
+            msg_result = supabase_client.table('chat_messages').select('role, content').eq('caso_id', caso_id).order('created_at').execute()
+            messages = msg_result.data or []
+            
+            # Get documents
+            doc_result = supabase_client.table('documentos').select('*').eq('caso_id', caso_id).eq('status', 'success').execute()
+            for doc in (doc_result.data or []):
                 pdfs.append({
-                    "name": item,
-                    "url": f"/casos/{caso_id}/documentos/{item}"
+                    "name": doc["nombre"],
+                    "url": doc.get("storage_path", "")
                 })
-                
+        except Exception as e:
+            print(f"[Supabase] Error loading case details: {e}")
+    
+    # Filesystem fallback for PDFs
+    if not pdfs:
+        docs_path = os.path.join(CASOS_DIR, caso_id, "documentos")
+        if os.path.exists(docs_path):
+            for item in os.listdir(docs_path):
+                if item.endswith(".pdf"):
+                    pdfs.append({"name": item, "url": f"/casos/{caso_id}/documentos/{item}"})
+    
+    # Filesystem fallback for messages
+    if not messages:
+        history_path = os.path.join(CASOS_DIR, caso_id, "chat_history.json")
+        if os.path.exists(history_path):
+            with open(history_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                messages = data.get("messages", [])
+    
     return {"messages": messages, "pdfs": pdfs}
 
 @app.delete("/api/casos/{caso_id}")
 async def delete_caso(caso_id: str):
     """Elimina un caso y todos sus documentos."""
-    import shutil
+    if supabase_client:
+        try:
+            # Delete from storage
+            try:
+                files = supabase_client.storage.from_('documentos').list(caso_id)
+                if files:
+                    paths = [f"{caso_id}/{f['name']}" for f in files]
+                    supabase_client.storage.from_('documentos').remove(paths)
+            except Exception:
+                pass
+            # Delete from DB (cascade deletes messages and docs)
+            supabase_client.table('casos').delete().eq('id', caso_id).execute()
+        except Exception as e:
+            print(f"[Supabase] Error deleting case: {e}")
+    
+    # Also clean local filesystem
     caso_path = os.path.join(CASOS_DIR, caso_id)
-    if not os.path.exists(caso_path):
-        raise HTTPException(status_code=404, detail="Caso no encontrado")
-    shutil.rmtree(caso_path)
+    if os.path.exists(caso_path):
+        shutil.rmtree(caso_path)
+    
     return {"status": "deleted", "id": caso_id}
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "supabase": supabase_client is not None}
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
@@ -211,10 +273,22 @@ async def chat(request: ChatRequest):
     try:
         response = attempt_chat(api_key_primary)
         
-        # Save chat history
+        # Save chat history to Supabase
+        new_msg_user = {"role": "user", "content": request.messages[-1].content}
+        new_msg_assistant = {"role": "assistant", "content": response.text}
+        
+        if supabase_client:
+            try:
+                supabase_client.table('chat_messages').insert([
+                    {"caso_id": request.caso_id, "role": "user", "content": request.messages[-1].content},
+                    {"caso_id": request.caso_id, "role": "assistant", "content": response.text}
+                ]).execute()
+            except Exception as e:
+                print(f"[Supabase] Error saving chat: {e}")
+        
+        # Also save to filesystem as fallback
         new_history = [msg.dict() for msg in request.messages]
         new_history.append({"role": "assistant", "content": response.text})
-        
         history_path = os.path.join(CASOS_DIR, request.caso_id, "chat_history.json")
         os.makedirs(os.path.dirname(history_path), exist_ok=True)
         with open(history_path, 'w', encoding='utf-8') as f:
@@ -375,22 +449,55 @@ async def generate_batch(request: BatchGenerateRequest):
             pdf_path = os.path.join(caso_docs_dir, pdf_filename)
             
             if os.path.exists(pdf_path):
+                pdf_url = f"/casos/{request.caso_id}/documentos/{pdf_filename}"
+                
+                # Upload to Supabase Storage
+                if supabase_client:
+                    try:
+                        storage_path = f"{request.caso_id}/{pdf_filename}"
+                        with open(pdf_path, 'rb') as pdf_file:
+                            supabase_client.storage.from_('documentos').upload(
+                                storage_path, pdf_file.read(),
+                                file_options={"content-type": "application/pdf", "upsert": "true"}
+                            )
+                        # Get public URL
+                        public_url = supabase_client.storage.from_('documentos').get_public_url(storage_path)
+                        pdf_url = public_url
+                        
+                        # Register in documentos table
+                        supabase_client.table('documentos').insert({
+                            "caso_id": request.caso_id,
+                            "nombre": pdf_filename,
+                            "tipo": formato_id,
+                            "storage_path": public_url,
+                            "status": "success"
+                        }).execute()
+                    except Exception as e:
+                        print(f"[Supabase] Error uploading PDF {pdf_filename}: {e}")
+                
                 results.append({
                     "id": formato_id,
                     "status": "success",
                     "name": pdf_filename,
-                    "url": f"/casos/{request.caso_id}/documentos/{pdf_filename}"
+                    "url": pdf_url
                 })
             else:
                 results.append({"id": formato_id, "status": "error", "message": "pdflatex no generó el archivo"})
         except Exception as e:
             results.append({"id": formato_id, "status": "error", "message": str(e)})
     
+    # Save datos_generales to Supabase
+    if supabase_client:
+        try:
+            supabase_client.table('casos').update({
+                "datos_generales": request.datos,
+                "ruta": request.ruta
+            }).eq('id', request.caso_id).execute()
+        except Exception as e:
+            print(f"[Supabase] Error updating case data: {e}")
+    
     return {"results": results}
 
-import io
-import zipfile
-from fastapi.responses import StreamingResponse
 
 @app.get("/api/casos/{caso_id}/descargar-zip")
 async def descargar_zip(caso_id: str):
