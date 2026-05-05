@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowRight, ArrowLeft, FileText, Users, ClipboardList, Printer, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, FileText, Users, ClipboardList, Printer, CheckCircle2, AlertCircle, Loader2, DownloadCloud, RotateCcw, PlusCircle, Eye, EyeOff } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay';
 import DashboardHome from './DashboardHome';
 
@@ -67,6 +67,8 @@ const FIELD_HINTS = {
 };
 
 const getHint = (key) => FIELD_HINTS[key] || '';
+
+const GRADOS = ['Preescolar', '1°', '2°', '3°', '4°', '5°', '6°', '7°', '8°', '9°', '10°', '11°'];
 
 export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdfsGenerated, casos, onCreateCase }) {
   const [step, setStep] = useState(0);
@@ -420,6 +422,15 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       <option value="Mañana">Mañana</option>
                       <option value="Tarde">Tarde</option>
                     </select>
+                  ) : campo.key === 'grado' ? (
+                    <select
+                      value={generalData[campo.key] || ''}
+                      onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
+                      className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Seleccione grado...</option>
+                      {GRADOS.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
                   ) : campo.key === 'estudiante' ? (
                     <div className="relative">
                       <input
@@ -487,12 +498,21 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">Datos Específicos por Formato</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Complete los campos particulares de cada documento.</p>
             <div className="space-y-4">
-              {selectedRuta.formatos.map((fmt, idx) => (
+              {selectedRuta.formatos.map((fmt, idx) => {
+                const uniqueFields = getUniqueFieldsForFormat(fmt);
+                const filledCount = uniqueFields.filter(c => specificData[fmt.id]?.[c.key]?.trim()).length;
+                const totalCount = uniqueFields.length;
+                return (
                 <details key={fmt.id} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden" open={idx === 0}>
                   <summary className="px-4 py-3 bg-gray-50 dark:bg-slate-800 cursor-pointer flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700/80 transition-colors">
                     <FileText size={16} className="text-emerald-600 dark:text-emerald-400" />
-                    <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">{idx + 1}. {fmt.titulo}</span>
-                    <span className="text-xs text-gray-400 dark:text-slate-500 ml-auto">{fmt.codigo}</span>
+                    <span className="font-semibold text-sm text-gray-800 dark:text-gray-200 flex-1">{idx + 1}. {fmt.titulo}</span>
+                    {totalCount === 0 ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-bold">✓ Listo</span>
+                    ) : (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${filledCount === totalCount ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400'}`}>{filledCount}/{totalCount}</span>
+                    )}
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{fmt.codigo}</span>
                   </summary>
                   <div className="p-4 grid grid-cols-1 gap-3 dark:bg-slate-900/50">
                     {(() => {
@@ -540,7 +560,8 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                     })()}
                   </div>
                 </details>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -551,6 +572,32 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Se generarán <strong>{selectedRuta?.total_formatos} documentos</strong> para la ruta <strong>{selectedRuta?.nombre}</strong>.
             </p>
+
+            {/* Vista previa de datos */}
+            {!results && !generating && (
+              <details className="mb-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                <summary className="px-4 py-3 bg-slate-50 dark:bg-slate-800 cursor-pointer flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
+                  <Eye size={16} className="text-brand-primary" />
+                  Vista previa de datos ingresados
+                  <span className="ml-auto text-xs text-slate-400">{progressPercentage}% completado</span>
+                </summary>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm dark:bg-slate-900/50 max-h-60 overflow-y-auto custom-scrollbar">
+                  {[...camposGenerales, ...sharedFields].map(campo => (
+                    <div key={campo.key} className="flex items-start gap-2">
+                      <span className={`mt-0.5 shrink-0 ${generalData[campo.key]?.trim() ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`}>
+                        {generalData[campo.key]?.trim() ? '●' : '○'}
+                      </span>
+                      <div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{campo.label}:</span>
+                        <span className={`ml-1 text-xs font-medium ${generalData[campo.key]?.trim() ? 'text-slate-800 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600 italic'}`}>
+                          {generalData[campo.key]?.trim() || 'Sin completar'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
 
             {!results && !generating && (
               <div className="text-center py-8">
@@ -576,27 +623,58 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
             )}
 
             {results && (
-              <div className="space-y-2">
-                {results.map((r, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border shadow-sm transition-all ${
-                    r.status === 'success' ? 'border-brand-primary/20 bg-brand-primary/5' : 'border-brand-secondary/20 bg-brand-secondary/5'
-                  }`}>
-                    {r.status === 'success' ? (
-                      <CheckCircle2 size={20} className="text-brand-primary shrink-0" />
-                    ) : (
-                      <AlertCircle size={20} className="text-brand-secondary shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.name || r.id}</p>
-                      {r.status === 'error' && <p className="text-xs text-brand-secondary/80 font-medium">{r.message}</p>}
-                    </div>
-                    {r.status === 'success' && r.url && (
-                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-brand-primary font-black hover:underline bg-white dark:bg-slate-900 px-3 py-2 rounded-lg shadow-sm border border-brand-primary/10">
-                        Ver PDF
-                      </a>
-                    )}
+              <div>
+                {/* Success banner */}
+                {results.filter(r => r.status === 'success').length > 0 && (
+                  <div className="bg-gradient-to-r from-emerald-50 to-brand-primary/5 dark:from-emerald-900/20 dark:to-brand-primary/10 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 mb-4 text-center">
+                    <CheckCircle2 size={32} className="text-emerald-500 mx-auto mb-2" />
+                    <p className="text-emerald-800 dark:text-emerald-300 font-bold">¡Expediente generado exitosamente!</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{results.filter(r => r.status === 'success').length} documentos listos para revisión</p>
                   </div>
-                ))}
+                )}
+
+                {/* Results list */}
+                <div className="space-y-2 mb-4">
+                  {results.map((r, i) => (
+                    <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border shadow-sm transition-all ${
+                      r.status === 'success' ? 'border-brand-primary/20 bg-brand-primary/5' : 'border-brand-secondary/20 bg-brand-secondary/5'
+                    }`}>
+                      {r.status === 'success' ? (
+                        <CheckCircle2 size={20} className="text-brand-primary shrink-0" />
+                      ) : (
+                        <AlertCircle size={20} className="text-brand-secondary shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.name || r.id}</p>
+                        {r.status === 'error' && <p className="text-xs text-brand-secondary/80 font-medium">{r.message}</p>}
+                      </div>
+                      {r.status === 'success' && r.url && (
+                        <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-brand-primary font-black hover:underline bg-white dark:bg-slate-900 px-3 py-2 rounded-lg shadow-sm border border-brand-primary/10">
+                          Ver PDF
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-3 justify-center pt-2 border-t border-slate-200 dark:border-slate-700">
+                  {pdfs.length > 0 && results[0]?.url && (
+                    <a 
+                      href={`/api/casos/${results[0].url.split('/')[2]}/descargar-zip`}
+                      download
+                      className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-md"
+                    >
+                      <DownloadCloud size={16} /> Descargar Todo (ZIP)
+                    </a>
+                  )}
+                  <button
+                    onClick={() => { setResults(null); setStep(1); }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                  >
+                    <RotateCcw size={16} /> Editar y Regenerar
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -173,6 +173,20 @@ async def get_caso_details(caso_id: str):
                 
     return {"messages": messages, "pdfs": pdfs}
 
+@app.delete("/api/casos/{caso_id}")
+async def delete_caso(caso_id: str):
+    """Elimina un caso y todos sus documentos."""
+    import shutil
+    caso_path = os.path.join(CASOS_DIR, caso_id)
+    if not os.path.exists(caso_path):
+        raise HTTPException(status_code=404, detail="Caso no encontrado")
+    shutil.rmtree(caso_path)
+    return {"status": "deleted", "id": caso_id}
+
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
     api_key_primary = request.api_key or os.environ.get("GEMINI_API_KEY")

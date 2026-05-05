@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Folder, Plus, ChevronRight, Search } from 'lucide-react';
+import { Folder, Plus, ChevronRight, Search, Trash2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
-export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCreateCase, addToast }) {
+export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCreateCase, onDeleteCase, addToast }) {
   const [isCreating, setIsCreating] = useState(false);
   const [newCaseName, setNewCaseName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -16,11 +17,29 @@ export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCrea
       onCreateCase(response.data);
       setNewCaseName('');
       setIsCreating(false);
+      if (addToast) addToast(`✅ Caso "${newCaseName.trim()}" creado exitosamente.`);
     } catch (error) {
       console.error("Error creating case:", error);
       if (addToast) {
         addToast(`❌ Error al crear caso: ${error.response?.status || ''} ${error.message}`, 'error');
       }
+    }
+  };
+
+  const handleDelete = async (e, casoId, casoNombre) => {
+    e.stopPropagation();
+    if (!window.confirm(`¿Eliminar el caso "${casoNombre}"?\n\nEsta acción eliminará todos los documentos generados y no se puede deshacer.`)) return;
+    
+    setDeletingId(casoId);
+    try {
+      await axios.delete(`/api/casos/${casoId}`);
+      if (onDeleteCase) onDeleteCase(casoId);
+      if (addToast) addToast(`🗑️ Caso eliminado correctamente.`);
+    } catch (error) {
+      console.error("Error deleting case:", error);
+      if (addToast) addToast(`❌ Error al eliminar: ${error.message}`, 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -90,18 +109,27 @@ export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCrea
         ) : (
           <div className="flex flex-col gap-1">
             {filteredCasos.map((caso) => (
-              <button
+              <div
                 key={caso.id}
-                onClick={() => onSelectCase(caso.id)}
-                className={`text-left w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between group transition-all ${
+                className={`group flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                   currentCaseId === caso.id 
                     ? 'bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-accent font-bold border-l-4 border-brand-secondary shadow-sm' 
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 border-l-4 border-transparent'
                 }`}
+                onClick={() => onSelectCase(caso.id)}
               >
-                <span className="truncate pr-2">{caso.nombre}</span>
-                <ChevronRight size={14} className={`${currentCaseId === caso.id ? 'text-brand-secondary' : 'text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100'} transition-opacity`} />
-              </button>
+                <span className="truncate pr-2 flex-1">{caso.nombre}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => handleDelete(e, caso.id, caso.nombre)}
+                    className="p-1 rounded-md text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                    title="Eliminar caso"
+                  >
+                    {deletingId === caso.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  </button>
+                  <ChevronRight size={14} className={`${currentCaseId === caso.id ? 'text-brand-secondary' : 'text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100'} transition-opacity`} />
+                </div>
+              </div>
             ))}
           </div>
         )}

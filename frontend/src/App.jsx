@@ -22,6 +22,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [generatingFormat, setGeneratingFormat] = useState(null);
   const [visualTheme, setVisualTheme] = useState('smj'); // 'original' | 'smj'
+  const [serverOnline, setServerOnline] = useState(null); // null = checking, true = online, false = offline
 
   const addToast = (message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -77,6 +78,28 @@ function App() {
       const response = await axios.get('/api/casos');
       setCasos(response.data.casos || []);
     } catch (error) { console.error("Error loading cases:", error); }
+  };
+
+  // Health check
+  useEffect(() => {
+    const checkHealth = () => {
+      axios.get('/api/health', { timeout: 5000 })
+        .then(() => setServerOnline(true))
+        .catch(() => setServerOnline(false));
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleDeleteCase = (casoId) => {
+    setCasos(prev => prev.filter(c => c.id !== casoId));
+    if (currentCaseId === casoId) {
+      setCurrentCaseId(null);
+      setLoadedMessages(null);
+      setSteps([]);
+      setPdfs([]);
+    }
   };
 
   const handleSelectCase = async (casoId) => {
@@ -175,7 +198,10 @@ function App() {
                   <h1 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-accent drop-shadow-sm tracking-tight">
                     ConciencIA
                   </h1>
-                  <p className="hidden sm:block text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5 uppercase tracking-tighter">Due Process Advisor</p>
+                  <p className="hidden sm:block text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5 uppercase tracking-tighter flex items-center gap-1.5">
+                    Due Process Advisor
+                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${serverOnline === true ? 'bg-emerald-400 shadow-[0_0_4px_theme(colors.emerald.400)]' : serverOnline === false ? 'bg-red-400 animate-pulse' : 'bg-amber-400 animate-pulse'}`} title={serverOnline === true ? 'Servidor en línea' : serverOnline === false ? 'Servidor desconectado' : 'Verificando conexión...'}></span>
+                  </p>
                 </div>
               </div>
               <button 
@@ -330,6 +356,7 @@ function App() {
               currentCaseId={currentCaseId}
               onSelectCase={handleSelectCase}
               onCreateCase={handleCreateCase}
+              onDeleteCase={handleDeleteCase}
               addToast={addToast}
             />
           </div>
