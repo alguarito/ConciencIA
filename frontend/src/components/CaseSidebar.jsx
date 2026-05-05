@@ -25,41 +25,41 @@ export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCrea
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
-      <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-indigo-50/50 dark:bg-indigo-900/20">
-        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-4">
-          <Folder className="text-indigo-600 dark:text-indigo-400" size={20} />
+      <div className="p-4 border-b border-slate-200/60 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/20">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+          <Folder className="text-blue-600 dark:text-blue-400" size={20} />
           Casos Activos
         </h2>
         
         {!isCreating ? (
           <button 
             onClick={() => setIsCreating(true)}
-            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+            className="w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow focus:ring-2 focus:ring-amber-500/50 text-sm font-semibold"
           >
             <Plus size={16} />
             Nuevo Caso
           </button>
         ) : (
           <form onSubmit={handleCreate} className="flex flex-col gap-2">
-            <input 
+              <input 
               autoFocus
               type="text" 
               placeholder="Nombre del estudiante o caso..." 
               value={newCaseName}
               onChange={(e) => setNewCaseName(e.target.value)}
-              className="w-full text-sm rounded-lg border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-950/50 px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-gray-200"
+              className="w-full text-sm rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950/50 px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none dark:text-slate-200"
             />
             <div className="flex gap-2">
               <button 
                 type="submit"
-                className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors"
+                className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors"
               >
                 Crear
               </button>
               <button 
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="flex-1 py-1.5 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 rounded-md text-sm font-medium transition-colors"
+                className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-md text-sm font-medium transition-colors"
               >
                 Cancelar
               </button>
@@ -70,34 +70,34 @@ export default function CaseSidebar({ casos, currentCaseId, onSelectCase, onCrea
 
       <div className="p-3">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input 
             type="text"
             placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 dark:text-gray-200"
+            className="w-full pl-9 pr-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 dark:text-slate-200 placeholder:text-slate-400"
           />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
         {filteredCasos.length === 0 ? (
-          <p className="text-center text-gray-400 dark:text-slate-500 text-sm mt-8">No hay casos registrados</p>
+          <p className="text-center text-slate-400 dark:text-slate-500 text-sm mt-8">No hay casos registrados</p>
         ) : (
           <div className="flex flex-col gap-1">
             {filteredCasos.map((caso) => (
               <button
                 key={caso.id}
                 onClick={() => onSelectCase(caso.id)}
-                className={`text-left w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between group transition-colors ${
+                className={`text-left w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between group transition-all ${
                   currentCaseId === caso.id 
-                    ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-200 font-medium' 
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-200'
+                    ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 font-semibold border-l-4 border-amber-500 shadow-sm' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 border-l-4 border-transparent'
                 }`}
               >
                 <span className="truncate pr-2">{caso.nombre}</span>
-                <ChevronRight size={14} className={`${currentCaseId === caso.id ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-300 dark:text-slate-600 opacity-0 group-hover:opacity-100'} transition-opacity`} />
+                <ChevronRight size={14} className={`${currentCaseId === caso.id ? 'text-amber-500 dark:text-amber-400' : 'text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100'} transition-opacity`} />
               </button>
             ))}
           </div>

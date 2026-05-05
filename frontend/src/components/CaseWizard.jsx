@@ -222,26 +222,26 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
       
       {/* ProgressBar (Top) */}
       {selectedRuta && step > 0 && step < 3 && (
-        <div className="w-full bg-gray-200 h-1.5 absolute top-0 left-0 z-20">
+        <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 absolute top-0 left-0 z-20">
           <div 
-            className="bg-emerald-500 h-1.5 transition-all duration-500 ease-out" 
+            className="bg-amber-500 h-1.5 transition-all duration-500 ease-out shadow-[0_0_8px_rgba(245,158,11,0.6)]" 
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
       )}
       
       {/* Stepper */}
-      <div className="bg-emerald-900 text-white px-4 py-3">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-4 py-3 border-b border-blue-950/50">
         <div className="flex items-center justify-between">
           {STEP_LABELS.map((label, i) => (
             <div key={i} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                i < step ? 'bg-emerald-400 text-emerald-900' : i === step ? 'bg-white text-emerald-900' : 'bg-emerald-700 text-emerald-300'
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                i < step ? 'bg-amber-400 text-amber-900 shadow-[0_0_10px_rgba(251,191,36,0.4)]' : i === step ? 'bg-white text-blue-900 ring-2 ring-amber-400 ring-offset-2 ring-offset-blue-800' : 'bg-blue-800/50 text-blue-300 border border-blue-700/50'
               }`}>
                 {i < step ? '✓' : i + 1}
               </div>
-              <span className={`text-xs hidden lg:inline ${i === step ? 'text-white font-semibold' : 'text-emerald-300'}`}>{label}</span>
-              {i < STEP_LABELS.length - 1 && <div className="w-4 lg:w-8 h-px bg-emerald-600 mx-1" />}
+              <span className={`text-xs hidden lg:inline ${i === step ? 'text-white font-bold tracking-wide' : i < step ? 'text-amber-100' : 'text-blue-300/70'}`}>{label}</span>
+              {i < STEP_LABELS.length - 1 && <div className={`w-4 lg:w-8 h-px mx-1 ${i < step ? 'bg-amber-400/50' : 'bg-blue-700/50'}`} />}
             </div>
           ))}
         </div>
@@ -255,11 +255,11 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Seleccione la ruta legal o disciplinaria que mejor se adapte a los hechos.</p>
             
             {/* Category Tabs */}
-            <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl mb-4 transition-colors">
+            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl mb-4 transition-colors border border-slate-200/50 dark:border-slate-700/50">
               <button
                 onClick={() => setActiveCategory('convivencia')}
                 className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeCategory === 'convivencia' ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  activeCategory === 'convivencia' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
               >
                 🛡️ Convivencia Escolar
@@ -267,7 +267,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
               <button
                 onClick={() => setActiveCategory('academico')}
                 className={`flex-1 flex justify-center items-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeCategory === 'academico' ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  activeCategory === 'academico' ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
               >
                 📚 Procesos Académicos
@@ -457,7 +457,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                             <select
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="">Seleccione jornada...</option>
                               <option value="Mañana">Mañana</option>
@@ -467,7 +467,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                             <textarea
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
-                              className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y min-h-[60px]"
+                              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px]"
                               placeholder={campo.label}
                               rows={2}
                             />
@@ -492,44 +492,44 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
 
             {!results && !generating && (
               <div className="text-center py-8">
-                <Printer size={48} className="text-emerald-300 mx-auto mb-4" />
+                <Printer size={48} className="text-blue-400 mx-auto mb-4" />
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate}
-                  className={`${canGenerate ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} font-semibold px-8 py-3 rounded-xl transition-all text-lg mb-2`}
+                  className={`${canGenerate ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl ring-2 ring-transparent hover:ring-amber-500/50' : 'bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed'} font-bold px-8 py-3 rounded-xl transition-all text-lg mb-2`}
                 >
                   Generar Todos los Documentos
                 </button>
                 {!canGenerate && (
-                  <p className="text-sm text-red-500 font-medium">Faltan campos obligatorios: {missingCriticalFields.join(', ')}</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-500 font-semibold">Faltan campos obligatorios: {missingCriticalFields.join(', ')}</p>
                 )}
               </div>
             )}
 
             {generating && (
               <div className="text-center py-8">
-                <Loader2 size={48} className="text-emerald-500 mx-auto mb-4 animate-spin" />
-                <p className="text-gray-500 font-medium">Compilando documentos...</p>
+                <Loader2 size={48} className="text-amber-500 mx-auto mb-4 animate-spin drop-shadow-md" />
+                <p className="text-slate-600 dark:text-slate-400 font-semibold">Compilando documentos legales...</p>
               </div>
             )}
 
             {results && (
               <div className="space-y-2">
                 {results.map((r, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border ${
-                    r.status === 'success' ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'
+                  <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border shadow-sm ${
+                    r.status === 'success' ? 'border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/30' : 'border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30'
                   }`}>
                     {r.status === 'success' ? (
-                      <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
+                      <CheckCircle2 size={20} className="text-blue-600 dark:text-blue-500 shrink-0" />
                     ) : (
-                      <AlertCircle size={20} className="text-red-500 shrink-0" />
+                      <AlertCircle size={20} className="text-amber-500 shrink-0" />
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">{r.name || r.id}</p>
-                      {r.status === 'error' && <p className="text-xs text-red-500">{r.message}</p>}
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{r.name || r.id}</p>
+                      {r.status === 'error' && <p className="text-xs text-amber-600 dark:text-amber-500 font-medium">{r.message}</p>}
                     </div>
                     {r.status === 'success' && r.url && (
-                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-700 font-medium hover:underline">
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 dark:text-blue-400 font-bold hover:underline bg-white dark:bg-slate-900 px-3 py-1 rounded-md shadow-sm border border-blue-100 dark:border-slate-700">
                         Ver PDF
                       </a>
                     )}
@@ -542,11 +542,11 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
       </div>
 
       {/* Navigation Buttons */}
-      <div className="p-4 border-t border-gray-100 bg-white flex justify-between">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex justify-between z-10 relative">
         <button
           onClick={() => setStep(s => Math.max(0, s - 1))}
           disabled={step === 0}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft size={16} /> Anterior
         </button>
@@ -554,7 +554,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
           <button
             onClick={() => setStep(s => Math.min(3, s + 1))}
             disabled={step === 0 && !selectedRuta}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-5 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm ring-2 ring-transparent hover:ring-amber-500/30"
           >
             Siguiente <ArrowRight size={16} />
           </button>

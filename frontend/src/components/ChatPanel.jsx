@@ -147,31 +147,33 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
 
   if (!casoId) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 p-8 text-center transition-colors duration-300">
-        <Bot size={48} className="text-indigo-300 dark:text-indigo-500 mb-4" />
-        <h2 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">Asesor de Debido Proceso</h2>
-        <p className="text-gray-400 dark:text-gray-500 text-sm max-w-xs">Selecciona un caso existente o crea uno nuevo en el panel izquierdo para comenzar la asesoría.</p>
+      <div className="h-full flex flex-col items-center justify-center bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-slate-100 dark:border-slate-800 p-8 text-center transition-colors duration-300">
+        <Bot size={56} className="text-brand-primary opacity-20 mb-4" />
+        <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Asesor de Debido Proceso</h2>
+        <p className="text-slate-400 dark:text-slate-500 text-sm max-w-xs">Selecciona un caso existente o crea uno nuevo en el panel izquierdo para comenzar la asesoría institucional.</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
-      <div className="bg-indigo-900 dark:bg-indigo-950 text-white p-4 flex items-center gap-3">
-        <Bot size={24} />
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 bg-opacity-70 dark:bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
+      <div className="bg-brand-primary dark:bg-brand-primary/80 text-white p-4 flex items-center gap-3 border-b border-white/10 shadow-md relative z-10">
+        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
+          <Bot size={24} />
+        </div>
         <div>
-          <h2 className="font-semibold text-lg">Asesor SMJ</h2>
-          <p className="text-indigo-200 text-xs">Manual de Convivencia y SIEE</p>
+          <h2 className="font-bold text-lg tracking-tight">Asesor ConciencIA</h2>
+          <p className="text-white/70 text-[10px] uppercase font-bold tracking-widest">Protocolos Institucionales</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-700'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-brand-primary/10 text-brand-primary' : 'bg-slate-200 dark:bg-slate-800 text-slate-700'}`}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
-            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-tl-none shadow-sm'}`}>
+            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-brand-primary text-white rounded-tr-none shadow-md' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-tl-none shadow-sm border border-slate-200/50 dark:border-slate-700/50'}`}>
               <div className={`prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-semibold ${msg.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
               </div>
@@ -192,21 +194,21 @@ export default function ChatPanel({ apiKeys, casoId, loadedMessages, onUpdateSte
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 transition-colors duration-300">
+      <div className="p-4 bg-slate-50/50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
         <form onSubmit={handleSend} className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Describe el caso o solicita un formato... (Shift + Enter para salto de línea)"
+            placeholder="Escribe aquí el caso o solicita un formato..."
             rows={1}
-            className="flex-1 rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white transition-colors resize-none overflow-y-auto min-h-[48px] max-h-[160px]"
+            className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white dark:focus:bg-slate-900 dark:text-white transition-all shadow-sm resize-none overflow-y-auto min-h-[48px] max-h-[160px]"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="bg-indigo-600 text-white rounded-xl px-4 h-[48px] hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center flex-shrink-0"
+            className="bg-brand-primary text-white rounded-xl px-4 h-[48px] hover:brightness-110 active:scale-95 focus:ring-4 focus:ring-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center flex-shrink-0 shadow-md"
           >
             <Send size={20} />
           </button>
