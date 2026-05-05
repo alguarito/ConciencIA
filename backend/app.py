@@ -1,8 +1,10 @@
 import os
 import json
 import subprocess
+import io
+import zipfile
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -409,7 +411,6 @@ if os.path.exists(FRONTEND_DIST):
 
 if __name__ == "__main__":
     import uvicorn
-    # En Hugging Face la variable de entorno es PORT, por defecto 7860
-    port = int(os.environ.get("PORT", 7860))
-    # Pasamos el objeto app directamente para evitar errores de importación de módulo
+    # Puerto por defecto 8000 (Vite proxy) o variable de entorno PORT
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
