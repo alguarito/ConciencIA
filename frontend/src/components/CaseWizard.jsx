@@ -6,6 +6,68 @@ import DashboardHome from './DashboardHome';
 
 const STEP_LABELS = ['Clasificar Caso', 'Datos Generales', 'Datos Específicos', 'Generar Expediente'];
 
+const FIELD_HINTS = {
+  // Generales
+  lugar: 'Ej: Salón 301, Patio central, Rectoría',
+  sede: 'Ej: Sede Principal, Sede San José',
+  grado: 'Ej: 6°, 7°A, 10°B, 11°',
+  grupo: 'Ej: A, B, 01',
+  estudiante: 'Nombre completo del estudiante como aparece en matrícula',
+  documento_estudiante: 'Ej: T.I. 1234567890',
+  acudiente: 'Nombre completo del padre, madre o acudiente',
+  documento_acudiente: 'Ej: C.C. 12345678',
+  parentesco: 'Ej: Madre, Padre, Abuelo/a, Tío/a',
+  telefono_acudiente: 'Ej: 3101234567',
+  correo_acudiente: 'Ej: acudiente@email.com',
+  responsable: 'Nombre del docente, coordinador o directivo a cargo',
+  cargo: 'Ej: Coordinador de Convivencia, Docente, Rector(a)',
+  // Hechos
+  descripcion_hechos: 'Relate objetivamente qué sucedió, cuándo, dónde y quiénes estuvieron involucrados. No incluya juicios de valor.',
+  norma: 'Ej: Manual de Convivencia Art. 37, Ley 1620 de 2013',
+  evidencias: 'Ej: Fotos, testimonios escritos, pantallazos, anotaciones en observador',
+  actuaciones_previas: 'Ej: Llamado de atención verbal el 15/03, citación a acudiente el 20/03',
+  // Versión estudiante
+  version_estudiante: 'Transcriba textualmente lo que el estudiante declaró sobre los hechos',
+  preguntas: 'Ej: ¿Qué pasó desde tu punto de vista? ¿Cómo te sentiste?',
+  // Orientación
+  orientacion: 'Ej: Se le explicó al estudiante la importancia del respeto y la convivencia...',
+  compromisos_estudiante: 'Ej: Me comprometo a respetar a mis compañeros y seguir las normas',
+  compromisos_acudiente: 'Ej: Me comprometo a acompañar el proceso formativo y asistir a seguimientos',
+  compromisos_institucion: 'Ej: La institución se compromete a realizar seguimiento quincenal',
+  // Remisión y protección
+  remision: 'Ej: Se remite por posible acoso escolar que requiere valoración psicosocial',
+  valoracion_orientacion: 'Concepto profesional del Docente Orientador sobre el caso',
+  medidas_proteccion: 'Ej: Separación inmediata de las partes, notificación a autoridades',
+  // Restaurativa
+  acciones_restaurativas: 'Ej: Carta de disculpa, servicio comunitario, mediación entre las partes',
+  acuerdos: 'Ej: Las partes acuerdan resolver conflictos mediante diálogo',
+  seguimiento: 'Ej: Revisión de acuerdos en 15 días, reunión de seguimiento el 30/04',
+  // Decisiones
+  decision: 'Ej: Se aplica matrícula en observación por el resto del año escolar',
+  notificacion: 'Ej: Se notifica personalmente al acudiente el día 05/05/2026 a las 10:00 am',
+  recurso: 'Ej: Se informa que cuenta con 5 días hábiles para recurso de reposición',
+  // Académicos
+  area_asignatura: 'Ej: Matemáticas, Ciencias Naturales, Lengua Castellana',
+  docente_area: 'Nombre del docente de la asignatura',
+  periodo: 'Ej: Primer periodo, Segundo periodo',
+  valoracion_reportada: 'Ej: 2.5 (Bajo), 3.0 (Básico)',
+  motivos_inconformidad: 'Ej: No se tuvo en cuenta la entrega del taller, el examen tenía temas no vistos',
+  pretension: 'Ej: Solicito la revisión y corrección de la nota del segundo periodo',
+  solicitud: 'Ej: Solicito la revisión del caso ante el Comité de Evaluación',
+  respuesta: 'Ej: La institución responde que se revisó el caso y se mantiene/modifica la decisión',
+  // Plan mejoramiento
+  competencias: 'Ej: Resolución de ecuaciones lineales, comprensión lectora argumentativa',
+  actividades: 'Ej: Taller escrito de 10 ejercicios, exposición oral, sustentación',
+  criterios_evaluacion: 'Ej: Entrega puntual 20%, desarrollo correcto 50%, sustentación 30%',
+  // Especiales
+  resultado: 'Ej: Aprobado, No aprobado, En seguimiento',
+  constancia: 'Ej: Se deja constancia de que el estudiante fue informado de sus derechos',
+  observaciones: 'Cualquier información adicional relevante para el expediente',
+  explicacion_proceso: 'Explique cómo se garantizó el derecho a la defensa, presunción de inocencia y debido proceso',
+};
+
+const getHint = (key) => FIELD_HINTS[key] || '';
+
 export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdfsGenerated, casos, onCreateCase }) {
   const [step, setStep] = useState(0);
   const [rutas, setRutas] = useState([]);
@@ -345,7 +407,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       value={generalData[campo.key] || ''}
                       onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
                       className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y min-h-[60px]"
-                      placeholder={campo.label}
+                      placeholder={getHint(campo.key) || campo.label}
                       rows={2}
                     />
                   ) : campo.key === 'jornada' ? (
@@ -376,7 +438,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                         }}
                         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                         className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder={campo.label}
+                        placeholder={getHint(campo.key) || campo.label}
                       />
                       {showSuggestions && (
                         <div className="absolute z-30 w-full mt-1 bg-white border border-emerald-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
@@ -410,7 +472,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                       value={generalData[campo.key] || ''}
                       onChange={(e) => handleGeneralChange(campo.key, e.target.value)}
                       className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      placeholder={campo.label}
+                      placeholder={getHint(campo.key) || campo.label}
                     />
                   )}
                 </div>
@@ -451,7 +513,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
                               className="w-full text-sm rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                              placeholder={campo.label}
+                              placeholder={getHint(campo.key) || campo.label}
                             />
                           ) : campo.key === 'jornada' ? (
                             <select
@@ -468,7 +530,7 @@ export default function CaseWizard({ currentCaseId, userProfile, addToast, onPdf
                               value={specificData[fmt.id]?.[campo.key] || ''}
                               onChange={(e) => handleSpecificChange(fmt.id, campo.key, e.target.value)}
                               className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[60px]"
-                              placeholder={campo.label}
+                              placeholder={getHint(campo.key) || campo.label}
                               rows={2}
                             />
                           )}
