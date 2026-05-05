@@ -324,6 +324,7 @@ PAQUETES = {
         "citacion-acudiente",
         "version-libre",
         "acta-estudio-caso",
+        "informe-explicativo-debido-proceso",
         "acta-compromiso",
         "acta-restaurativa",
         "seguimiento-restaurativo",
@@ -336,6 +337,7 @@ PAQUETES = {
         "version-libre",
         "protocolo-tipo-iii",
         "acta-estudio-caso",
+        "informe-explicativo-debido-proceso",
         "informe-coordinacion-rectoria",
         "notificacion-decision",
         "recurso-reposicion",
@@ -345,6 +347,7 @@ PAQUETES = {
     "situacion-tipo-ii": [
         "protocolo-tipo-ii",
         "citacion-acudiente",
+        "informe-explicativo-debido-proceso",
         "acta-restaurativa",
         "seguimiento-restaurativo",
         "notificacion-decision",
@@ -352,6 +355,7 @@ PAQUETES = {
     "situacion-tipo-iii": [
         "protocolo-tipo-iii",
         "citacion-acudiente",
+        "informe-explicativo-debido-proceso",
         "informe-coordinacion-rectoria",
         "acta-estudio-caso",
         "notificacion-decision",
