@@ -63,6 +63,7 @@ LABELS = {
     "resultado": "Resultado",
     "constancia": "Constancia",
     "observaciones": "Observaciones",
+    "explicacion_proceso": "Análisis y Garantías del Debido Proceso",
 }
 
 
@@ -179,6 +180,17 @@ FORMATOS: dict[str, dict[str, Any]] = {
             ("Concepto y solicitud", ["valoracion_orientacion", "decision", "solicitud", "observaciones"]),
         ],
         "firmas": ["Coordinacion", "Docente Orientador", "Recibido Rectoria"],
+    },
+    "informe-explicativo-debido-proceso": {
+        "codigo": "SMJ-FDP-INFO",
+        "titulo": "Informe Explicativo del Debido Proceso (Garantías Legales)",
+        "fuente": "Constitución Nacional Art. 29, Ley 115 de 1994, Manual de Convivencia SMJ.",
+        "secciones": [
+            ("Descripción del Caso", ["descripcion_hechos"]),
+            ("Análisis de Garantías", ["explicacion_proceso"]),
+            ("Cierre de Informe", ["notificacion", "recurso", "observaciones"]),
+        ],
+        "firmas": ["Coordinación/Rectoría", "Estudiante", "Acudiente"],
     },
     "acta-restaurativa": {
         "codigo": "SMJ-FJR-01",

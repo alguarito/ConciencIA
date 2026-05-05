@@ -81,6 +81,7 @@ def load_context():
     - citacion-acudiente: Citación a padre de familia o acudiente
     - derecho-peticion-academico: Derecho de petición académico
     - informe-coordinacion-rectoria: Informe de Coordinación y Orientación a Rectoría
+    - informe-explicativo-debido-proceso: Informe explicativo del Debido Proceso (Garantías Legales)
     - llamado-atencion: Formato de llamado de atención
     - matricula-observacion: Formato de matrícula en observación
     - notificacion-decision: Notificación de decisión institucional
@@ -99,6 +100,9 @@ def load_context():
     - version-libre: Formato para versión libre
     
     IMPORTANTE: NO inventes nombres de formato. Usa ÚNICAMENTE los listados arriba. Si el usuario pide un documento que no está en la lista, indícale cuál de los formatos disponibles se ajusta mejor.
+    
+    INFORME EXPLICATIVO DEL DEBIDO PROCESO:
+    Cuando se genere el formato 'informe-explicativo-debido-proceso', el campo 'explicacion_proceso' DEBE contener un análisis detallado y redactado de forma profesional sobre cómo se están garantizando los derechos del estudiante en este caso específico (derecho a la defensa, presunción de inocencia, contradicción, etc.), citando el Manual de Convivencia y la Ley 115.
     """
     return context
 
