@@ -47,11 +47,6 @@ export default function DashboardHome({ casos, rutas, onCreateCase }) {
   return (
     <div className="h-full flex flex-col p-6 overflow-y-auto custom-scrollbar dark:bg-slate-900 transition-colors duration-300 relative">
       
-      {/* Watermark Background */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.04] dark:opacity-[0.02] z-0 overflow-hidden">
-        <img src="/logo.png" alt="" className="w-full max-w-[600px] object-contain grayscale" />
-      </div>
-
       {/* Header */}
       <div className="flex items-center gap-3 mb-8 relative z-10">
         <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
